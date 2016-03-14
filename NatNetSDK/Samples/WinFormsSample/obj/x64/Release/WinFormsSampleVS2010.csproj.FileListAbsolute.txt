@@ -1,0 +1,9 @@
+H:\放这里\NatNetSDK\Samples\bin\WinFormTestApp.exe.config
+H:\放这里\NatNetSDK\Samples\bin\WinFormTestApp.exe
+H:\放这里\NatNetSDK\Samples\bin\WinFormTestApp.pdb
+H:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x64\Release\WinFormsSampleVS2010.csprojResolveAssemblyReference.cache
+H:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x64\Release\WinFormTestApp.Form1.resources
+H:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x64\Release\WinFormTestApp.Properties.Resources.resources
+H:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x64\Release\WinFormsSampleVS2010.csproj.GenerateResource.Cache
+H:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x64\Release\WinFormTestApp.exe
+H:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x64\Release\WinFormTestApp.pdb
