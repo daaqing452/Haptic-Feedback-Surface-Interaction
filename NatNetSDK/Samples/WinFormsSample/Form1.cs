@@ -54,6 +54,7 @@ namespace WinFormTestApp
         Server server;
         public string serverIP = "127.0.0.1";
         public int serverPort = 7643;
+        Constructor constructor;
 #endif
 
         // [NatNet] Our NatNet object
@@ -157,7 +158,9 @@ namespace WinFormTestApp
             ver = m_NatNet.NatNetVersion();
             String strVersion = String.Format("NatNet Version : {0}.{1}.{2}.{3}", ver[0], ver[1],ver[2],ver[3]);
             OutputMessage(strVersion);
-
+#if VR
+            constructor = new Constructor(m_NatNet);
+#endif
             return 0;
             
         }
@@ -317,11 +320,7 @@ namespace WinFormTestApp
         private void UpdateDataGrid()
         {
 #if VR
-            for (int i = 0; i < m_FrameOfData.nOtherMarkers; i++)
-            {
-                NatNetML.Marker marker = m_FrameOfData.OtherMarkers[i];
-                Console.WriteLine(i + " " + marker.x);
-            }
+            constructor.Construct(m_FrameOfData);
 #endif
             
             // update MarkerSet data
