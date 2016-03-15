@@ -22,3 +22,6 @@ H:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormsSampleVS2010
 F:\放这里\NatNetSDK\Samples\bin\WinFormTestApp.exe.config
 F:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.exe
 F:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.pdb
+F:\vr-ex-0.1\NatNetSDK\Samples\bin\WinFormTestApp.exe.config
+F:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.exe
+F:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.pdb
