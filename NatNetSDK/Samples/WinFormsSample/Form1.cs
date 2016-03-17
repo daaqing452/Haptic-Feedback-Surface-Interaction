@@ -320,7 +320,13 @@ namespace WinFormTestApp
         private void UpdateDataGrid()
         {
 #if VR
-            constructor.Construct(m_FrameOfData);
+            //server.BroadCast(m_FrameOfData.nOtherMarkers.ToString());
+            //constructor.Construct(m_FrameOfData);
+            if (m_FrameOfData.nRigidBodies > 0)
+            {
+                RigidBodyData rb = m_FrameOfData.RigidBodies[0];
+                server.BroadCast(rb.x + " " + rb.y + " " + rb.z);
+            }
 #endif
             
             // update MarkerSet data

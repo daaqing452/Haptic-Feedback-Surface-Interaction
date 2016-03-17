@@ -25,3 +25,12 @@ F:\放这里\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.pdb
 F:\vr-ex-0.1\NatNetSDK\Samples\bin\WinFormTestApp.exe.config
 F:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.exe
 F:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.pdb
+H:\vr-ex-0.1\NatNetSDK\Samples\bin\WinFormTestApp.exe.config
+H:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.exe
+H:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.pdb
+H:\vr-ex-0.1\NatNetSDK\Samples\bin\WinFormTestApp.exe
+H:\vr-ex-0.1\NatNetSDK\Samples\bin\WinFormTestApp.pdb
+H:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormsSampleVS2010.csprojResolveAssemblyReference.cache
+H:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.Form1.resources
+H:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.Properties.Resources.resources
+H:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormsSampleVS2010.csproj.GenerateResource.Cache

@@ -7,11 +7,14 @@ using System.Net.Sockets;
 using System.Threading;
 
 
-public class Camera : MonoBehaviour
+public class Connect : MonoBehaviour
 {
     public TcpClient client;
     public string serverIP = "127.0.0.1";
     public int serverPort = 7643;
+
+    public object mutex = new object();
+    public float hrx, hry, hrz;
 
 	// Use this for initialization
 	void Start ()
@@ -23,9 +26,10 @@ public class Camera : MonoBehaviour
     }
 	
 	// Update is called once per frame
-	void LateUpdate ()
+	void Update ()
     {
-
+        GameObject hand = GameObject.FindWithTag("hand_r");
+        //hand.transform.localPosition = new Vector3(0.1f, 0.1f, 0.1f);
     }
 
     void ReceiveThread()
@@ -36,6 +40,13 @@ public class Camera : MonoBehaviour
         {
             string line = streamReader.ReadLine();
             if (line == null) break;
+            string[] f = line.Split(' ');
+            lock (mutex)
+            {
+                hrx = float.Parse(f[0]);
+                hry = float.Parse(f[1]);
+                hrz = float.Parse(f[2]);
+            }
             Debug.Log(line);
         }
         Debug.Log("disconnect");

@@ -47,9 +47,9 @@
   <ItemGroup>
      <Compile Include="Assets\HandyHands\scripts\VisualizeJoint.cs" />
      <Compile Include="Assets\HandyHands\scripts\showcasecam.cs" />
-     <Compile Include="Assets\Me\Ball.cs" />
-     <Compile Include="Assets\Me\Camera.cs" />
-     <Compile Include="Assets\Me\Hand.cs" />
+     <Compile Include="Assets\Mine\Ball.cs" />
+     <Compile Include="Assets\Mine\Connect.cs" />
+     <Compile Include="Assets\Mine\Hand.cs" />
      <None Include="Assets\HandyHands\shaders\handyskin.shader" />
      <None Include="Assets\HandyHands\readme.txt" />
  <Reference Include="UnityEngine.UI">

@@ -34,9 +34,8 @@ namespace WinFormTestApp
 
             if (frame.nOtherMarkers > 0)
             {
-                StreamWriter sw = new StreamWriter(new FileStream("a.txt", FileMode.OpenOrCreate));
+                StreamWriter sw = new StreamWriter(new FileStream("a.txt", FileMode.Append));
                 sw.WriteLine(t.ToString("HH:mm:ss fffffff"));
-                sw.WriteLine("xxx");
 
                 List<Marker> markers = new List<Marker>();
                 for (int i = 0; i < frame.nOtherMarkers; ++i)
