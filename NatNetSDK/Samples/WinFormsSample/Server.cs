@@ -63,7 +63,6 @@ namespace WinFormTestApp
                 StreamWriter streamWriter = new StreamWriter(client.GetStream());
                 streamWriter.WriteLine(info);
                 streamWriter.Flush();
-                Console.WriteLine(info);
             }
         }
     }

@@ -55,6 +55,8 @@ namespace WinFormTestApp
         public string serverIP = "127.0.0.1";
         public int serverPort = 7643;
         Constructor constructor;
+        double updateUITimerTickCounter = 0;
+        double TicksPerSecond = 20;
 #endif
 
         // [NatNet] Our NatNet object
@@ -319,14 +321,14 @@ namespace WinFormTestApp
         /// </summary>
         private void UpdateDataGrid()
         {
+            //Console.WriteLine(DateTime.Now.ToString("HH:mm:ss fffffff"));
 #if VR
-            //server.BroadCast(m_FrameOfData.nOtherMarkers.ToString());
-            //constructor.Construct(m_FrameOfData);
-            if (m_FrameOfData.nRigidBodies > 0)
+            constructor.Construct(m_FrameOfData);
+            /*if (m_FrameOfData.nRigidBodies > 0)
             {
                 RigidBodyData rb = m_FrameOfData.RigidBodies[0];
                 server.BroadCast(rb.x + " " + rb.y + " " + rb.z);
-            }
+            }*/
 #endif
             
             // update MarkerSet data
@@ -628,7 +630,7 @@ namespace WinFormTestApp
 
             // [NatNet] Add the incoming frame of mocap data to our frame queue,  
             // Note: the frame queue is a shared resource with the UI thread, so lock it while writing
-             lock(syncLock)
+            lock(syncLock)
             {
                 // [optional] clear the frame queue before adding a new frame
                 m_FrameQueue.Clear();
@@ -653,6 +655,17 @@ namespace WinFormTestApp
         /// <param name="e"></param>
         private void UpdateUITimer_Tick(object sender, EventArgs e)
         {
+#if VR
+            updateUITimerTickCounter++;
+            if (updateUITimerTickCounter >= 60 / TicksPerSecond)
+            {
+                updateUITimerTickCounter -= 60 / TicksPerSecond;
+            }
+            else
+            {
+                return;
+            }
+#endif
             // the frame queue is a shared resource with the FrameOfMocap delivery thread, so lock it while reading
             // note this can block the frame delivery thread.  In a production application frame queue management would be optimized.
             lock (syncLock)
