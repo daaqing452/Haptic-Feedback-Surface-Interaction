@@ -47,7 +47,6 @@ from megaug.augmentaions import *
 ## AugImage
 #### 成员变量
 * `str` **name**
-
 * **image**
 
     > 格式为(1,c,h,w)
@@ -144,3 +143,29 @@ from megaug.augmentaions import *
 * **\_\_init\_\_**(gaussian_mean=0, gaussian_std=10, name=None)
 
 
+## Flip
+#### 成员变量
+* `str` **name**
+* `str` **flip_axis**
+
+    > flip_axis == 'X' 则进行水平翻转
+    > flip_axis == 'Y' 则进行垂直翻转
+
+#### 成员函数
+* **\_\_init\_\_**(flip_axis='X', name=None)
+
+
+## Graying
+
+    > 将3-channel的彩色图变成3-channel的灰度图
+
+#### 成员变量
+* `str` **name**
+
+#### 成员函数
+* **\_\_init\_\_**(name=None)
+
+
+## Flip
+#### 成员变量
+* `str` **name**
