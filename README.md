@@ -4,6 +4,7 @@
 ```
 from megaug.augmentaions import *
 ```
+    void int main()
 
 ### AugPipeline
 ```
