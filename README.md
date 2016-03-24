@@ -20,14 +20,19 @@ from megaug.augmentaions import *
 * `AugImage` **new_image**(name=None, contain_mask=False, contain_landmark=False, is_main=True)
 
     > 新建一个图片
+    
     > name：图片名字
+    
     > contain_mask：是否包含mask
+    
     > contain_landmark：是否包含landmark
+    
     > is_main：是否为主图，一个AugPipeline有且仅有一张主图
 
 * `void` **compile**()
 
     > 将建好的流水线编译
+    
     > run所需的输入和run之前需要赋值的变量会打印在屏幕上
 
 * `void` **set_value**(name, value)
@@ -66,19 +71,23 @@ from megaug.augmentaions import *
 * `float` **rotate_std** = 0.2
     
     > 旋转噪声平均值和幅度
+
     > rotate ∈ rotate_mean ± 1/2 * rotate_std
 
 * `float` **scale_mean** = 1.0
 * `float` **scale_std** = 0.2
 
     > 缩放噪声平均值和幅度
+    
     > scale ∈ scale_mean ± 1/2 * scale_std
 
 * `(float,float)` **translation_mean** = (0.0, 0.0)
 * `(float,float)` **translation_std** = (0.2, 0.2)
 
     > 位移噪声平均值和幅度
+    
     > translation_x ∈ translation_mean[0] ± 1/2 * translation_std[0]
+    
     > translation_y ∈ translation_mean[1] ± 1/2 * translation_std[1]
 
 * `megbrain.opr.WarpPerspectiveBorderMode` **border_mode** = CONSTANT
@@ -102,11 +111,14 @@ from megaug.augmentaions import *
 * `int` **channel** = None
 
     > channel == 1 则三个颜色通道使用同一噪声
+    
     > channel == 3 则三个颜色通道分别使用不同噪声
+    
     > channel == None 则需要在run时传入一个和被增强图大小相同的矩阵m，格式为(1,1,h,w)
 
 * `float` **gamma_mean** = 0.5
 * `float` **gamma_std** = 1.0
 
     > gamma噪声的指数参数
+    
     > gamma = gamma_mean + gamma_std
