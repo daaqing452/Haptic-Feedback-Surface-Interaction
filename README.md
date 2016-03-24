@@ -44,11 +44,14 @@ from megaug.augmentaions import *
 * **name**
 * **image**
 * **mask**
-* **lanbdmark**
+* **landmark**
 
     > name：图片名字
+    
     > 图片格式为(1,c,h,w)
+    
     > mask格式为(1,1,h,w)
+    
     > landmark格式为(x,2)
 
 ##### 成员函数
