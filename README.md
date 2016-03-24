@@ -1,4 +1,4 @@
-# MegAug README
+# MegAug使用文档
 
 ## import
 ```
@@ -7,6 +7,9 @@ from megaug.augmentaions import *
 
 
 ## AugPipeline
+
+> 图片增强流水线，必须存在
+
 #### 成员变量
 * `megbrain.comp_graph` **cg**
 
@@ -45,6 +48,9 @@ from megaug.augmentaions import *
 
 
 ## AugImage
+
+> 图片类
+
 #### 成员变量
 * `str` **name**
 * **image**
@@ -66,6 +72,9 @@ from megaug.augmentaions import *
 
 
 ## AffineNoise
+
+> 仿射变换噪声
+
 #### 成员变量
 * `str` **name**
 * `float` **rotate_mean** = 0.0
@@ -91,23 +100,18 @@ from megaug.augmentaions import *
     
     > translation_y ∈ translation_mean[1] ± 1/2 * translation_std[1]
 
-* `megbrain.opr.WarpPerspectiveBorderMode` **border_mode** = CONSTANT
-
-    > 边界类型
-
 * `float` **border_value** = 0.0
 
     > 边界填充颜色
-
-* `megbrain.opr.WarpPerspectiveInterpMode` **interp_mode** = LINEAR
-
-    > 差值类型
 
 #### 成员函数
 * **\_\_init\_\_**(name=None)
 
 
 ## GammaNoise
+
+> Gamma噪声
+
 #### 成员变量
 * `str` **name**
 * `int` **channel** = None
@@ -130,6 +134,9 @@ from megaug.augmentaions import *
 
 
 ## GaussianNoise
+
+> 高斯噪声
+
 #### 成员变量
 * `str` **name**
 * `float` **gaussian_mean** = 0
@@ -144,6 +151,9 @@ from megaug.augmentaions import *
 
 
 ## Flip
+
+> 翻转
+
 #### 成员变量
 * `str` **name**
 * `str` **flip_axis**
@@ -166,6 +176,71 @@ from megaug.augmentaions import *
 * **\_\_init\_\_**(name=None)
 
 
-## Flip
+## InterpolationBlur
+
+> 插值模糊，将图缩小再放大
+
 #### 成员变量
 * `str` **name**
+* `str` **interp_mode** = 'LINEAR'
+
+    > 插值类型
+    
+    > 目前只支持'LINEAR'
+
+* `(float,float)` **resize_ratio** = (0.5,0.5)
+* `(float,float)` **resize_shape** = None
+
+    > resize_shape != None 则将图缩小到resize_shape大小
+    
+    > resize_shape == None 则将图缩小到resize_ratio比例大小
+
+#### 成员函数
+* **\_\_init\_\_**(resize_ratio=(0.5,0.5), resize_shape=None, name=None)
+
+
+## GaussianBlur
+
+> 高斯模糊
+
+#### 成员变量
+* `str` **name**
+* `str` **blur_method** = 'AVERAGE'
+
+    > 模糊的filter类型
+    
+    > 支持'AVERAGE'（同一参数）、'RANDOM'（随机分布）
+
+* `float` **filter_h** = 5
+* `float` **filter_w** = 5
+
+    > filter大小
+
+* `float` **pad_h** = 2
+* `float` **pad_w** = 2
+
+    > padding大小
+
+* `float` **stride_h** = 1
+* `float` **stride_w** = 1 
+
+    > stride大小
+
+#### 成员函数
+* **\_\_init\_\_**(name=None)
+
+
+## ShelterLibrary
+
+> 遮挡
+
+#### 成员变量
+* `str` **name**
+* `str` **shelter_type** = 'NONE'
+
+    > 遮挡类型
+    
+    > 目前支持'GLASS'（眼镜）、'HAIR'（头发）
+
+#### 成员函数
+* **\_\_init\_\_**(shelter_type='NONE', name=None)
