@@ -4,7 +4,6 @@
 ```
 from megaug.augmentaions import *
 ```
-    void int main()
 
 ### AugPipeline
 ```
@@ -12,10 +11,15 @@ ap = AugPipeline()
 ```
 ##### 成员变量
 * **cg**
+
 > comp_grapy()
+
 * **cn**
+
 > comp_node('gpu0')
+
 * **seed**
+
 > megbrain的随机种子
 
 ##### 成员函数
