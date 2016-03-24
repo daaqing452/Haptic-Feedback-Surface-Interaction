@@ -1,13 +1,13 @@
 # MegAug README
 
-### import
+## import
 ```
 from megaug.augmentaions import *
 ```
 
 
-### AugPipeline
-##### 成员变量
+## AugPipeline
+#### 成员变量
 * `megbrain.comp_graph` **cg**
 
 * `megbrain.comp_node `**cn**
@@ -16,7 +16,7 @@ from megaug.augmentaions import *
 
     > megbrain的随机种子
 
-##### 成员函数
+#### 成员函数
 * `AugImage` **new_image**(name=None, contain_mask=False, contain_landmark=False, is_main=True)
 
     > 新建一个图片
@@ -44,11 +44,9 @@ from megaug.augmentaions import *
     > 将所需的输入参数传入得到最终结果
 
 
-### AugImage
-##### 成员变量
-* **name**
-
-    > name：图片名字
+## AugImage
+#### 成员变量
+* `str` **name**
 
 * **image**
 
@@ -62,14 +60,15 @@ from megaug.augmentaions import *
     
     > 格式为(x,2)
 
-##### 成员函数
+#### 成员函数
 * `AugImage` **augmented**(augmentation, unassign=False)
 
     > 将一个增强augmentation应用到图片上
 
 
-### AffineNoise
-##### 成员变量
+## AffineNoise
+#### 成员变量
+* `str` **name**
 * `float` **rotate_mean** = 0.0
 * `float` **rotate_std** = 0.2
     
@@ -105,12 +104,13 @@ from megaug.augmentaions import *
 
     > 差值类型
 
-##### 成员函数
+#### 成员函数
 * **\_\_init\_\_**(name=None)
 
 
-### GammaNoise
-##### 成员变量
+## GammaNoise
+#### 成员变量
+* `str` **name**
 * `int` **channel** = None
 
     > channel == 1 则三个颜色通道使用同一噪声
@@ -122,6 +122,25 @@ from megaug.augmentaions import *
 * `float` **gamma_mean** = 0.5
 * `float` **gamma_std** = 1.0
 
-    > gamma噪声的指数参数
+    > gamma噪声指数的平均值和幅度
     
-    > gamma = gamma_mean + gamma_std
+    > gamma ∈ gamma_mean + 1/2 * gamma_std
+    
+#### 成员函数
+* **\_\_init\_\_**(channel=None, name=None)
+
+
+## GaussianNoise
+#### 成员变量
+* `str` **name**
+* `float` **gaussian_mean** = 0
+* `float` **gaussian_std** = 10
+
+    > gaussian噪声的平均值和幅度
+    
+    > gaussian ∈ gaussian_mean 1/2 * gaussian_std
+
+#### 成员函数
+* **\_\_init\_\_**(gaussian_mean=0, gaussian_std=10, name=None)
+
+
