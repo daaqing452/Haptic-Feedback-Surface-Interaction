@@ -7,7 +7,7 @@ from megaug.augmentaions import *
 
 ### AugPipeline
 ##### 成员变量
-* `megbrain.comp_grapy` **cg**
+* *megbrain.comp_grapy* **cg**
 
 * `megbrain.comp_node `**cn**
     
