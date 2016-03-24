@@ -7,7 +7,7 @@ from megaug.augmentaions import *
 
 ### AugPipeline
 ##### 成员变量
-* *megbrain.comp_grapy* **cg**
+* *megbrain.comp_graph* **cg**
 
 * `megbrain.comp_node `**cn**
     
@@ -16,7 +16,7 @@ from megaug.augmentaions import *
     > megbrain的随机种子
 
 ##### 成员函数
-* `AugImage` **new_image**(name=None, contain_mask=False, contain_landmark=False, is_main=True)
+* `AugImage` `**new_image**(name=None, contain_mask=False, contain_landmark=False, is_main=True)`
 
     > 新建一个图片
     
