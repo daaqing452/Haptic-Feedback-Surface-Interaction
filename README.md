@@ -47,17 +47,20 @@ from megaug.augmentaions import *
 ### AugImage
 ##### 成员变量
 * **name**
-* **image**
-* **mask**
-* **landmark**
 
     > name：图片名字
+
+* **image**
+
+    > 格式为(1,c,h,w)
+
+* **mask**
+
+    > 格式为(1,1,h,w)
+
+* **landmark**
     
-    > 图片格式为(1,c,h,w)
-    
-    > mask格式为(1,1,h,w)
-    
-    > landmark格式为(x,2)
+    > 格式为(x,2)
 
 ##### 成员函数
 * `AugImage` **augmented**(augmentation, unassign=False)
@@ -103,7 +106,7 @@ from megaug.augmentaions import *
     > 差值类型
 
 ##### 成员函数
-* **__init__**(name=None)
+* **\_\_init\_\_**(name=None)
 
 
 ### GammaNoise
