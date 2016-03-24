@@ -12,7 +12,7 @@ ap = AugPipeline()
 ##### 成员变量
 * **cg**
 
-> comp_grapy()
+    > comp_grapy()
 
 * **cn**
 
