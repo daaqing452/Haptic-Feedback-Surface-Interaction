@@ -7,7 +7,7 @@ from megaug.augmentaions import *
 
 ### AugPipeline
 ##### 成员变量
-* *megbrain.comp_graph* **cg**
+* `megbrain.comp_graph` **cg**
 
 * `megbrain.comp_node `**cn**
     
@@ -16,7 +16,7 @@ from megaug.augmentaions import *
     > megbrain的随机种子
 
 ##### 成员函数
-* `AugImage` `**new_image**(name=None, contain_mask=False, contain_landmark=False, is_main=True)`
+* `AugImage` **new_image**(name=None, contain_mask=False, contain_landmark=False, is_main=True)
 
     > 新建一个图片
     
@@ -53,10 +53,29 @@ from megaug.augmentaions import *
 * `float` **rotate_std**
     
     > 旋转噪声平均值和幅度
-    > rotate_mean ± 1/2 * rotate_std
+    > rotate = rotate_mean ± 1/2 * rotate_std
 
 * `float` **scale_mean**
 * `float` **scale_std**
 
     > 缩放噪声平均值和幅度
-    > scale_mean ± 1/2 * scale_std
+    > scale = scale_mean ± 1/2 * scale_std
+
+* `(float,float)` **translation_mean**
+* `(float,float)` **translation_std**
+
+    > 位移噪声平均值和幅度
+    > translation_x = translation_mean[0] ± 1/2 * translation_std[0]
+    > translation_y = translation_mean[1] ± 1/2 * translation_std[1]
+
+* `megbrain.opr.WarpPerspectiveBorderMode` **border_mode** = CONSTANT
+
+    > 边界类型
+
+* `float` **border_value** = 0.0
+
+    > 边界填充颜色
+
+* `megbrain.opr.WarpPerspectiveInterpMode` **interp_mode** = LINEAR
+
+    > 差值类型
