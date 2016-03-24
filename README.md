@@ -157,7 +157,7 @@ from megaug.augmentaions import *
 
 ## Graying
 
-    > 将3-channel的彩色图变成3-channel的灰度图
+> 将3-channel的彩色图变成3-channel的灰度图
 
 #### 成员变量
 * `str` **name**
