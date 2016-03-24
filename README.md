@@ -16,11 +16,11 @@ ap = AugPipeline()
 
 * **cn**
 
-> comp_node('gpu0')
-
+    > comp_node('gpu0')
+    
 * **seed**
 
-> megbrain的随机种子
+    > megbrain的随机种子
 
 ##### 成员函数
 *   `AugImage` **new_image**(name=None, contain_mask=False, contain_landmark=False, is_main=True)
