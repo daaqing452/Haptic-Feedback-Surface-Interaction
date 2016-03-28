@@ -22,7 +22,7 @@ namespace Tracking
     class SampleReadFromFile
     {
         TrackingBase tracking = new TrackingNaive();
-        int framePerSecond = 5;
+        int framePerSecond = 100;
 
         public SampleReadFromFile(MainWindow mainWindow)
         {
@@ -52,6 +52,13 @@ namespace Tracking
                     break;
                 }
                 Frame frameTarget = tracking.Track(frame);
+                swRes.WriteLine("framestart");
+                for (int i = 0; i < frameTarget.pl.Count; ++i)
+                {
+                    swRes.WriteLine("p " + frameTarget.pl[i]);
+                }
+                swRes.WriteLine("frameend");
+                swRes.WriteLine("");
                 Thread.Sleep(1000 / framePerSecond);
             }
             srTrack.Close();
@@ -136,7 +143,7 @@ namespace Tracking
 #if TRACKING_INDEX_PRINT
             Console.Write("index: [");
 #endif
-            Frame frameTarget = new Frame(frame.rb, new List<Point3D>());
+            Frame frameTarget = new Frame(new List<Point3D>());
             for (int i = 0; i < frameStd.pl.Count; ++i)
             {
 #if TRACKING_INDEX_PRINT
@@ -193,8 +200,7 @@ namespace Tracking
                         double z = double.Parse(arr[3]);
                         if (arr[0] == "rb")
                         {
-                            frame.rb = new Point3D(x, y, z);
-                            frame.pl.Add(frame.rb);
+                            frame.pl.Add(new Point3D(x, y, z));
                             status = 2;
                         }
                         else
@@ -359,18 +365,15 @@ namespace Tracking
     class Frame
     {
         public static List<KeyValuePair<int, int>> rel;
-        public Point3D rb;
         public List<Point3D> pl;
 
         public Frame()
         {
-            rb = new Point3D(0, 0, 0);
             pl = new List<Point3D>();
         }
 
-        public Frame(Point3D rb, List<Point3D> pl)
+        public Frame(List<Point3D> pl)
         {
-            this.rb = rb;
             this.pl = pl;
         }
     }
@@ -405,7 +408,7 @@ namespace Tracking
 
         override public string ToString()
         {
-            return "(" + x.ToString() + ", " + y.ToString() + ", " + z.ToString() + ")";
+            return x.ToString() + " " + y.ToString() + " " + z.ToString();
         }
 
         public double Length()

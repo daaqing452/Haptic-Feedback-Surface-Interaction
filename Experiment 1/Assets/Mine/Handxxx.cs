@@ -11,7 +11,7 @@ public class Hand : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         GameObject go = GameObject.FindWithTag("hand_r");
-        go.transform.Rotate(0, 0, 10);
+        //go.transform.Rotate(0, 0, 10);
 	}
 
     void dfs(GameObject go)
