@@ -12,3 +12,6 @@ F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.csproj.GenerateResource.Cach
 F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.exe
 F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.pdb
 F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.csprojResolveAssemblyReference.cache
+E:\vr-ex-0.2\Tracking\Tracking\bin\Release\Tracking.exe.config
+E:\vr-ex-0.2\Tracking\Tracking\obj\Release\Tracking.exe
+E:\vr-ex-0.2\Tracking\Tracking\obj\Release\Tracking.pdb

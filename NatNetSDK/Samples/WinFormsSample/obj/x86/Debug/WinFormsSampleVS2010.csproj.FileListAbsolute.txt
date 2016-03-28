@@ -39,3 +39,12 @@ F:\vr-ex-0.1\NatNetSDK\Samples\bin\WinFormTestApp.pdb
 F:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.Form1.resources
 F:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.Properties.Resources.resources
 F:\vr-ex-0.1\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormsSampleVS2010.csproj.GenerateResource.Cache
+E:\vr-ex-0.2\NatNetSDK\Samples\bin\WinFormTestApp.exe.config
+E:\vr-ex-0.2\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.exe
+E:\vr-ex-0.2\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.pdb
+E:\vr-ex-0.2\NatNetSDK\Samples\bin\WinFormTestApp.exe
+E:\vr-ex-0.2\NatNetSDK\Samples\bin\WinFormTestApp.pdb
+E:\vr-ex-0.2\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormsSampleVS2010.csprojResolveAssemblyReference.cache
+E:\vr-ex-0.2\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.Form1.resources
+E:\vr-ex-0.2\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormTestApp.Properties.Resources.resources
+E:\vr-ex-0.2\NatNetSDK\Samples\WinFormsSample\obj\x86\Debug\WinFormsSampleVS2010.csproj.GenerateResource.Cache
