@@ -1,0 +1,14 @@
+F:\vr-ex-0.1\Tracking\Tracking\bin\Release\Tracking.exe.config
+F:\vr-ex-0.1\Tracking\Tracking\bin\Release\Tracking.exe
+F:\vr-ex-0.1\Tracking\Tracking\bin\Release\Tracking.pdb
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\MainWindow.g.cs
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\App.g.cs
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking_MarkupCompile.cache
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking_MarkupCompile.lref
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\MainWindow.baml
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.g.resources
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.Properties.Resources.resources
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.csproj.GenerateResource.Cache
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.exe
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.pdb
+F:\vr-ex-0.1\Tracking\Tracking\obj\Release\Tracking.csprojResolveAssemblyReference.cache
