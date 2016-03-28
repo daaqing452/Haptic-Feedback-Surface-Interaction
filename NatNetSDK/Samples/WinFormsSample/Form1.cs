@@ -52,9 +52,6 @@ namespace WinFormTestApp
     {
 #if VR
         Server server;
-        public string serverIP = "127.0.0.1";
-        public int serverPort = 7643;
-        Constructor constructor;
         double updateUITimerTickCounter = 0;
         double TicksPerSecond = 20;
 #endif
@@ -101,7 +98,7 @@ namespace WinFormTestApp
             InitializeComponent();
             timer = new HiResTimer();
 #if VR
-            server = new Server(serverIP, serverPort);
+            server = new Server();
 #endif
         }
 
@@ -160,9 +157,6 @@ namespace WinFormTestApp
             ver = m_NatNet.NatNetVersion();
             String strVersion = String.Format("NatNet Version : {0}.{1}.{2}.{3}", ver[0], ver[1],ver[2],ver[3]);
             OutputMessage(strVersion);
-#if VR
-            constructor = new Constructor(m_NatNet);
-#endif
             return 0;
             
         }
@@ -321,16 +315,28 @@ namespace WinFormTestApp
         /// </summary>
         private void UpdateDataGrid()
         {
-            //Console.WriteLine(DateTime.Now.ToString("HH:mm:ss fffffff"));
 #if VR
-            constructor.Construct(m_FrameOfData);
-            /*if (m_FrameOfData.nRigidBodies > 0)
+            server.BroadCast("framestart");
+            FrameOfMocapData frame = m_FrameOfData;
+            for (int i = 0; i < frame.nRigidBodies; ++i)
             {
-                RigidBodyData rb = m_FrameOfData.RigidBodies[0];
-                server.BroadCast(rb.x + " " + rb.y + " " + rb.z);
-            }*/
+                RigidBodyData rb = frame.RigidBodies[0];
+                server.BroadCast("rbp " + rb.x + " " + rb.y + " " + rb.z);
+                float[] quat = new float[4] { rb.qx, rb.qy, rb.qz, rb.qw };
+                float[] eulers = m_NatNet.QuatToEuler(quat, (int)NATEulerOrder.NAT_XYZr);
+                double rx = RadiansToDegrees(eulers[0]);
+                double ry = RadiansToDegrees(eulers[1]);
+                double rz = RadiansToDegrees(eulers[2]);
+                server.BroadCast("rbr " + rx + " " + ry + " " + rz);
+            }
+            for (int i = 0; i < frame.nOtherMarkers; ++i)
+            {
+                Marker marker = frame.OtherMarkers[i];
+                server.BroadCast("om " + marker.x + " " + marker.y + " " + marker.z);
+            }
+            server.BroadCast("frameend");
 #endif
-            
+
             // update MarkerSet data
             for (int i = 0; i < m_FrameOfData.nMarkerSets; i++)
             {

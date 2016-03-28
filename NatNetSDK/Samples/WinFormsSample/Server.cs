@@ -13,13 +13,15 @@ namespace WinFormTestApp
 {
     class Server
     {
+        public string serverIp = "169.254.212.79";
+        public int serverPort = 7643;
         public TcpListener tcpListener;
         public List<TcpClient> clientList = new List<TcpClient>();
         public object clientListMutex = new object();
         
-        public Server(string ip, int port)
+        public Server()
         {
-            tcpListener = new TcpListener(IPAddress.Parse(ip), port);
+            tcpListener = new TcpListener(IPAddress.Parse(serverIp), serverPort);
             Thread listenThread = new Thread(ListenThread);
             listenThread.Start();
         }
