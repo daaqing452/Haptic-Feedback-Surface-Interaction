@@ -87,20 +87,31 @@ namespace Tracking
     class SampleFromNet
     {
         TrackingBase Tracking = new TrackingNaive();
+        string mode = "console";
         
         public SampleFromNet()
         {
             TcpClient socket = new TcpClient();
-            socket.Connect("192.168.1.195", 1510);
-            Console.WriteLine("Xx");
+            socket.Connect("192.168.1.159", 7643);
             StreamReader sr = new StreamReader(socket.GetStream());
+            StreamWriter sw = new StreamWriter(new FileStream("samp.txt", FileMode.OpenOrCreate));
             while (true)
             {
                 string line = sr.ReadLine();
                 if (line == null) break;
-                Console.WriteLine(line);
+                switch (mode)
+                {
+                    case "file":
+                        sw.WriteLine(line);
+                        break;
+                    case "console":
+                        Console.WriteLine(line);
+                        break;
+                }
             }
             socket.Close();
+            sr.Close();
+            sw.Close();
         }
     }
 }

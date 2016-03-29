@@ -16,6 +16,6 @@ public class Screen : MonoBehaviour {
         System.Random r = new System.Random();
         float x = r.Next(80) - 40;
         float y = r.Next(80) - 40;
-        target.transform.localPosition = new Vector3(x / 100, y / 100, -0.6f);
+        //target.transform.localPosition = new Vector3(x / 100, y / 100, -0.6f);
 	}
 }
