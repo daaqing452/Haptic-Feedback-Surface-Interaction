@@ -32,8 +32,8 @@ namespace Tracking
 
         public void Main()
         {
-            new SampleReadFromFile(this);
-            //new SampleFromNet();
+            //new SampleReadFromFile(this);
+            new SampleFromNet();
         }
     }
 
@@ -91,7 +91,7 @@ namespace Tracking
         public SampleFromNet()
         {
             TcpClient socket = new TcpClient();
-            socket.Connect("169.254.212.79", 7643);
+            socket.Connect("192.168.1.195", 1510);
             Console.WriteLine("Xx");
             StreamReader sr = new StreamReader(socket.GetStream());
             while (true)
