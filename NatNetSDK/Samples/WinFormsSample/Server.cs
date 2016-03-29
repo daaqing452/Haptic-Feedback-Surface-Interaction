@@ -13,7 +13,7 @@ namespace WinFormTestApp
 {
     class Server
     {
-        public string serverIp = "127.0.0.1";
+        public string serverIp = "192.168.1.159";
         public int serverPort = 7643;
         public TcpListener tcpListener;
         public List<TcpClient> clientList = new List<TcpClient>();
@@ -48,8 +48,14 @@ namespace WinFormTestApp
             StreamReader streamReader = new StreamReader(client.GetStream());
             while (true)
             {
-                string line = streamReader.ReadLine();
-                if (line == null) break;
+                try
+                {
+                    string line = streamReader.ReadLine();
+                }
+                catch
+                {
+                    break;
+                }
             }
             lock (clientListMutex)
             {
@@ -60,11 +66,14 @@ namespace WinFormTestApp
 
         public void BroadCast(string info)
         {
-            foreach (TcpClient client in clientList)
+            lock (clientListMutex)
             {
-                StreamWriter streamWriter = new StreamWriter(client.GetStream());
-                streamWriter.WriteLine(info);
-                streamWriter.Flush();
+                foreach (TcpClient client in clientList)
+                {
+                    StreamWriter streamWriter = new StreamWriter(client.GetStream());
+                    streamWriter.WriteLine(info);
+                    streamWriter.Flush();
+                }
             }
         }
     }

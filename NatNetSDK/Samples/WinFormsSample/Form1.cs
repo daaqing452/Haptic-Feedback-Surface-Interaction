@@ -322,12 +322,12 @@ namespace WinFormTestApp
             {
                 RigidBodyData rb = frame.RigidBodies[0];
                 server.BroadCast("rbp " + rb.x + " " + rb.y + " " + rb.z);
-                float[] quat = new float[4] { rb.qx, rb.qy, rb.qz, rb.qw };
+                /*float[] quat = new float[4] { rb.qx, rb.qy, rb.qz, rb.qw };
                 float[] eulers = m_NatNet.QuatToEuler(quat, (int)NATEulerOrder.NAT_XYZr);
                 double rx = RadiansToDegrees(eulers[0]);
                 double ry = RadiansToDegrees(eulers[1]);
-                double rz = RadiansToDegrees(eulers[2]);
-                server.BroadCast("rbr " + rx + " " + ry + " " + rz);
+                double rz = RadiansToDegrees(eulers[2]);*/
+                server.BroadCast("rbq " + rb.qx + " " + rb.qy + " " + rb.qz + " " + rb.qw);
             }
             for (int i = 0; i < frame.nOtherMarkers; ++i)
             {
