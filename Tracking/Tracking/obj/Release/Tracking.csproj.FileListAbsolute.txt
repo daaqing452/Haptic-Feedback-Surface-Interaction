@@ -25,3 +25,4 @@ E:\vr-ex-0.2\Tracking\Tracking\obj\Release\MainWindow.baml
 E:\vr-ex-0.2\Tracking\Tracking\obj\Release\Tracking.g.resources
 E:\vr-ex-0.2\Tracking\Tracking\obj\Release\Tracking.Properties.Resources.resources
 E:\vr-ex-0.2\Tracking\Tracking\obj\Release\Tracking.csproj.GenerateResource.Cache
+E:\vr-ex-0.2\Tracking\Tracking\obj\Release\Tracking.csprojResolveAssemblyReference.cache

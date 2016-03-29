@@ -16,8 +16,8 @@ public class VisualizeJoint : MonoBehaviour {
 	}
 
 	void OnDrawGizmos() {
-		Gizmos.color = Color.red;
-		Gizmos.DrawSphere(transform.position, .01f);
+		Gizmos.color = Color.blue;
+		Gizmos.DrawSphere(transform.position, .007f);
 
 		foreach (Transform child in transform){
 			Gizmos.DrawLine(transform.position, child.position);

@@ -62,6 +62,7 @@ namespace Tracking
                 }
 #endif
                 double[] b = new double[] { 450, 300, 450, 350 };
+                //double[] b = new double[] { 700, 500, 700, 600 };
                 for (int i = 0; i < frame.pl.Count; ++i)
                 {
                     if (frame.pl[i] == null)
@@ -77,7 +78,7 @@ namespace Tracking
         public void DrawPoint(Canvas canvas, double x, double y, SolidColorBrush color)
         {
             Ellipse e = new Ellipse();
-            e.Height = e.Width = 5;
+            e.Height = e.Width = 10;
             e.Fill = color;
             e.Stroke = color;
             Canvas.SetTop(e, y);

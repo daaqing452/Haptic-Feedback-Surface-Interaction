@@ -32,15 +32,15 @@ namespace Tracking
 
         public void Main()
         {
-            //new SampleReadFromFile(this);
-            new SampleFromNet();
+            new SampleReadFromFile(this);
+            //new SampleFromNet();
         }
     }
 
     class SampleReadFromFile
     {
         TrackingBase tracking = new TrackingNaive();
-        int framePerSecond = 100;
+        int framePerSecond = 2;
 
         public SampleReadFromFile(MainWindow mainWindow)
         {

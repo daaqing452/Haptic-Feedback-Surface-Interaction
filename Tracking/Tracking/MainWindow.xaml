@@ -8,10 +8,10 @@
         Title="MainWindow" Height="710" Width="1350">
     <Canvas>
         <Canvas Name="xRawCanvas" Height="650" Width="650" Canvas.Left="10" Canvas.Top="10">
-            <Border BorderThickness="2" BorderBrush="Aquamarine"  Height="650" Width="650"></Border>
+            <Border BorderThickness="2" BorderBrush="Gray"  Height="650" Width="650"></Border>
         </Canvas>
         <Canvas Name="xTargetCanvas" Height="650" Width="650" Canvas.Left="670" Canvas.Top="10">
-            <Border BorderThickness="2" BorderBrush="Aquamarine"  Height="650" Width="650"></Border>
+            <Border BorderThickness="2" BorderBrush="Gray"  Height="650" Width="650"></Border>
         </Canvas>
     </Canvas>
 </Window>
