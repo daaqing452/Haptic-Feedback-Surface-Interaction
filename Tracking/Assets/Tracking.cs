@@ -32,7 +32,7 @@ public class Tracking : MonoBehaviour
     {
         //if (frameCnt != 0) return;
         if (!GetFrame()) return;
-        if (last == null)
+        if (frameCnt == 0)
         {
             Register();
         }
@@ -40,6 +40,7 @@ public class Tracking : MonoBehaviour
         {
             Refering();
         }
+        last = now;
         Draw();
         frameCnt++;
     }
@@ -196,11 +197,23 @@ public class Tracking : MonoBehaviour
             {
                 int k = arr[j];
                 if (weight[i, k] > MATCH_THRESHOLD) break;
-                networkFlow.AddEdge(i, k, weight[i, k]);
+                networkFlow.AddEdge(k, i, weight[i, k]);
             }
         }
         int[] match = networkFlow.Solve();
-
+        List<Vector3> fix = new List<Vector3>();
+        for (int i = 0; i < last.n; i++)
+        {
+            if (match[i] == -1)
+            {
+                fix.Add(last.pl[i]);
+            }
+            else
+            {
+                fix.Add(now.pl[match[i]]);
+            }
+        }
+        now.pl = fix;
     }
 }
 
@@ -262,13 +275,13 @@ class NetworkFlow
     List<int> ec;
     List<float> eq;
     int n;
-    int nNow;
+    int nLast;
     int s;
     int t;
-    public NetworkFlow(int nNow, int nLast)
+    public NetworkFlow(int nLast, int nNow)
     {
-        this.nNow = nNow;
-        n = nNow + nLast + 2;
+        this.nLast = nLast;
+        n = nLast + nNow + 2;
         s = n - 2;
         t = n - 1;
         edge = new List<int>[n];
@@ -276,13 +289,13 @@ class NetworkFlow
         ev = new List<int>();
         ec = new List<int>();
         eq = new List<float>();
-        for (int i = 0; i < nNow; i++) AddEdge(s, i, INF, 0);
-        for (int i = 0; i < nLast; i++) AddEdge(nNow + i, t, INF, 0);
+        for (int i = 0; i < nLast; i++) AddEdge(s, i, INF, 0);
+        for (int i = 0; i < nNow; i++) AddEdge(nLast + i, t, INF, 0);
     }
 
     public void AddEdge(int u, int v, float q)
     {
-        AddEdge(u, nNow + v, 1, q);
+        AddEdge(u, nLast + v, 1, q);
     }
     public void AddEdge(int u, int v, int c, float q)
     {
@@ -333,8 +346,8 @@ class NetworkFlow
                 ec[pref[i] ^ 1] += 1;
             }
         }
-        int[] match = new int[nNow];
-        for (int u = 0; u < nNow; u++)
+        int[] match = new int[nLast];
+        for (int u = 0; u < nLast; u++)
         {
             match[u] = -1;
             for (int i = 0; i < edge[u].Count; i++)
@@ -342,7 +355,7 @@ class NetworkFlow
                 int j = edge[u][i];
                 if (ec[j] == 0)
                 {
-                    match[u] = ev[j] - nNow;
+                    match[i] = ev[j] - nLast;
                     break;
                 }
             }
