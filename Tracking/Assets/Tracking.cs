@@ -14,8 +14,7 @@ public class Tracking : MonoBehaviour
     StreamReader reader;
     Frame now;
     Frame last;
-    Color[] pcolor;
-    int frameCnt = 0;
+    int frameID = -1;
 
     void Start()
     {
@@ -30,19 +29,29 @@ public class Tracking : MonoBehaviour
 
     void Update ()
     {
-        //if (frameCnt != 0) return;
+        frameID++;
+        if (frameID > 3637) return;
         if (!GetFrame()) return;
-        if (frameCnt == 0)
+        if (frameID == 0 || frameID - last.rb[0].t > 10)
         {
-            Register();
+            if (now.n == MARKER_NUM_EXPECT)
+            {
+                Debug.Log("register");
+                Register();
+            }
+            else
+            {
+                Debug.Log("giveup");
+                return;
+            }
         }
         else
         {
+            Debug.Log("refering");
             Refering();
         }
         last = now;
         Draw();
-        frameCnt++;
     }
 
     bool GetFrame()
@@ -54,12 +63,16 @@ public class Tracking : MonoBehaviour
         now = new Frame();
 
         /* get rb */
-        now.rb[0] = GetVector3FromArray(lineArray, 6);
+        now.rb[0] = new Marker(GetVector3FromArray(lineArray, 6), frameID);
         for (int i = 1; i <= 3; i++)
         {
-            now.rb[i] = GetVector3FromArray(lineArray, 6 + i * 4);
+            now.rb[i] = new Marker(GetVector3FromArray(lineArray, 6 + i * 4), frameID);
         }
-        if (now.rb[0] == Vector3x.nan) return false;
+        if (now.rb[0].p == Vector3x.nan)
+        {
+            Debug.Log("rigidbody miss!");
+            return false;
+        }
 
         /* get other markers */
         for (int i = 22; i < lineArray.Length; i += 3)
@@ -69,18 +82,12 @@ public class Tracking : MonoBehaviour
             bool inRbs = false;
             for (int j = 1; j <= 3; j++)
             {
-                if (Vector3x.Equal(p, now.rb[j])) inRbs = true;
+                if (Vector3x.Equal(p, now.rb[j].p)) inRbs = true;
             }
             if (inRbs) continue;
-            now.Add(p);
+            now.Add(new Marker(p, frameID));
         }
-
-        /* init color */
-        pcolor = new Color[now.n];
-        for (int i = 0; i < now.n; i++)
-        {
-            pcolor[i] = Color.white;
-        }
+        Debug.Log("frameID: " + frameID + ", marker: " + now.n);
         return true;
     }
     Vector3 GetVector3FromArray(string[] arr, int idx)
@@ -98,14 +105,30 @@ public class Tracking : MonoBehaviour
 
     void Draw()
     {
-        DrawMarker(0, now.rb[0], Color.black);
+        DrawMarker(0, now.rb[0].p, Color.black);
         for (int i = 1; i <= 3; i++)
         {
-            DrawMarker(i, now.rb[i], Color.gray);
+            DrawMarker(i, now.rb[i].p, Color.gray);
         }
         for (int i = 0; i < now.n; i++)
         {
-            DrawMarker(i + 4, now.pl[i], pcolor[i]);
+            Color nowColor = Color.white;
+            switch (i / 4)
+            {
+                case 0:
+                    nowColor = Color.red;
+                    break;
+                case 1:
+                    nowColor = Color.yellow;
+                    break;
+                case 2:
+                    nowColor = Color.green;
+                    break;
+                case 3:
+                    nowColor = Color.blue;
+                    break;
+            }
+            DrawMarker(i + 4, now.pl[i].p, nowColor);
         }
         for (int i = now.n + 4; i < MARKER_NUM; i++)
         {
@@ -128,16 +151,16 @@ public class Tracking : MonoBehaviour
         /* init and get normal vector */
         int[] arr = new int[now.n];
         for (int i = 0; i < now.n; i++) arr[i] = i;
-        Vector3 nv = Vector3x.NormalVector(now.rb[1], now.rb[2], now.rb[3]);
+        Vector3 nv = Vector3x.NormalVector(now.rb[1].p, now.rb[2].p, now.rb[3].p);
 
         /* get angle and dist */
         float[] angle = new float[now.n];
         float[] dist = new float[now.n];
         for (int i = 0; i < now.n; i++)
         {
-            Vector3 pv = Vector3x.ProjectiveVector(nv, now.pl[i] - now.rb[0]);
-            angle[i] = Vector3.Angle(pv, now.rb[1] - now.rb[0]);
-            dist[i] = (now.pl[i] - now.rb[0]).magnitude;
+            Vector3 pv = Vector3x.ProjectiveVector(nv, now.pl[i].p - now.rb[0].p);
+            angle[i] = Vector3.Angle(pv, now.rb[1].p - now.rb[0].p);
+            dist[i] = (now.pl[i].p - now.rb[0].p).magnitude;
         }
 
         /* sort by finger then sort by dist per finger */
@@ -152,56 +175,37 @@ public class Tracking : MonoBehaviour
         }
 
         /* renew */
-        List<Vector3> pl2 = new List<Vector3>();
+        List<Marker> pl2 = new List<Marker>();
         for (int i = 0; i < now.n; i++)
         {
             pl2.Add(now.pl[arr[i]]);
         }
         now.pl = pl2;
-
-        /* coloring */
-        for (int i = 0; i < now.n; i++)
-        {
-            switch (i % 4)
-            {
-                case 0:
-                    pcolor[i] = Color.red;
-                    break;
-                case 1:
-                    pcolor[i] = Color.yellow;
-                    break;
-                case 2:
-                    pcolor[i] = Color.green;
-                    break;
-                case 3:
-                    pcolor[i] = Color.blue;
-                    break;
-            }
-        }
     }
 
     void Refering()
     {
-        NetworkFlow networkFlow = new NetworkFlow(now.n, last.n);
+        /* matching */
+        NetworkFlow networkFlow = new NetworkFlow(last.n, now.n);
         float[,] weight = new float[now.n, last.n];
         for (int i = 0; i < now.n; i++)
         {
             int[] arr = new int[last.n];
             for (int j = 0; j < last.n; j++)
             {
-                weight[i, j] = (now.pl[i] - last.pl[j]).magnitude;
+                weight[i, j] = (now.pl[i].p - last.pl[j].p).magnitude;
                 arr[j] = j;
             }
             Array.Sort(arr, (int a, int b) => { return weight[i, a] < weight[i, b] ? -1 : 1; });
             for (int j = 0; j < Math.Min(last.n, 5); j++)
             {
                 int k = arr[j];
-                if (weight[i, k] > MATCH_THRESHOLD) break;
+                //if (weight[i, k] > MATCH_THRESHOLD) break;
                 networkFlow.AddEdge(k, i, weight[i, k]);
             }
         }
         int[] match = networkFlow.Solve();
-        List<Vector3> fix = new List<Vector3>();
+        Frame fix = new Frame(now.rb);
         for (int i = 0; i < last.n; i++)
         {
             if (match[i] == -1)
@@ -213,7 +217,8 @@ public class Tracking : MonoBehaviour
                 fix.Add(now.pl[match[i]]);
             }
         }
-        now.pl = fix;
+        now = fix;
+        //now.CheckQuality(frameID);
     }
 }
 
@@ -240,30 +245,44 @@ class Vector3x
     }
 }
 
+class Marker
+{
+    public Vector3 p;
+    public int t;
+
+    public Marker(Vector3 p, int t)
+    {
+        this.p = p;
+        this.t = t;
+    }
+}
+
 class Frame
 {
-    public Vector3[] rb;
-    public List<Vector3> pl;
+    public Marker[] rb;
+    public List<Marker> pl;
     public int n;
-
-    public Frame()
+    
+    public Frame(Marker[] rb = null, List<Marker> pl = null)
     {
-        rb = new Vector3[4];
-        pl = new List<Vector3>();
-        n = 0;
-    }
-
-    public Frame(Vector3[] rb, List<Vector3> pl)
-    {
-        this.rb = rb;
-        this.pl = pl;
+        this.rb = (rb == null) ? (new Marker[4]) : rb;
+        this.pl = (pl == null) ? (new List<Marker>()) : pl;
         n = this.pl.Count;
     }
 
-    public void Add(Vector3 p)
+    public void Add(Marker p)
     {
         pl.Add(p);
         n++;
+    }
+
+    public void CheckQuality(int t)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            Marker marker = pl[i];
+            if (t - marker.t > 10) Debug.Log("low quality (" + i + "): " + (t - marker.t));
+        }
     }
 }
 
@@ -289,8 +308,8 @@ class NetworkFlow
         ev = new List<int>();
         ec = new List<int>();
         eq = new List<float>();
-        for (int i = 0; i < nLast; i++) AddEdge(s, i, INF, 0);
-        for (int i = 0; i < nNow; i++) AddEdge(nLast + i, t, INF, 0);
+        for (int i = 0; i < nLast; i++) AddEdge(s, i, 1, 0);
+        for (int i = 0; i < nNow; i++) AddEdge(nLast + i, t, 1, 0);
     }
 
     public void AddEdge(int u, int v, float q)
@@ -327,7 +346,7 @@ class NetworkFlow
                 for (int i = 0; i < edge[u].Count; i++)
                 {
                     int j = edge[u][i];
-                    if (ec[j] == 0) continue;
+                    if (ec[j] <= 0) continue;
                     int v = ev[j];
                     float q = eq[j];
                     if (dist[v] <= dist[u] + q) continue;
@@ -353,9 +372,9 @@ class NetworkFlow
             for (int i = 0; i < edge[u].Count; i++)
             {
                 int j = edge[u][i];
-                if (ec[j] == 0)
+                if (ec[j] == 0 && ev[j] < s)
                 {
-                    match[i] = ev[j] - nLast;
+                    match[u] = ev[j] - nLast;
                     break;
                 }
             }
