@@ -6,23 +6,36 @@ using System.IO;
 
 public class All : MonoBehaviour {
 
+    //  Game objects
+    GameObject gHand;
+    GameObject gIndexTop;
+    GameObject gDisplay;
+    GameObject gScreen;
+    GameObject gPointingTarget;
+
+    //  Network
     TcpClient socket = new TcpClient();
     const string serverIP = "192.168.1.159";
     const int serverPort = 7643;
 
+    //  ButtonClick
     const float adjustDelta = 0.001f;
 
-    // Use this for initialization
-    void Start () {
-	
-	}
+    //  Task
+    bool pointingTargetTouching = false;
 
-    // Update is called once per frame
+    void Start () {
+        gHand = GameObject.Find("hand_right_prefab");
+        gIndexTop = GameObject.Find("index_top_r");
+        gDisplay = GameObject.Find("display");
+        gScreen = GameObject.Find("screen");
+        gPointingTarget = GameObject.Find("pointing target");
+    }
+    
     void Update()
     {
         ButtonClick();
-        GameObject indexTop = GameObject.Find("index_top_r");
-        Debug.Log(indexTop.transform.position.z);
+        TaskPointing();
     }
 
     void ButtonClick()
@@ -50,57 +63,34 @@ public class All : MonoBehaviour {
         }
 
         //  adjust screen
-        if (Input.GetKey(KeyCode.W))
-        {
-            GameObject screen = GameObject.Find("Screen Kernel");
-            screen.transform.Translate(0.0f, adjustDelta, 0.0f);
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            GameObject screen = GameObject.Find("Screen Kernel");
-            screen.transform.Translate(0.0f, -adjustDelta, 0.0f);
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            GameObject screen = GameObject.Find("Screen Kernel");
-            screen.transform.Translate(-adjustDelta, 0.0f, 0.0f);
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            GameObject screen = GameObject.Find("Screen Kernel");
-            screen.transform.Translate(adjustDelta, 0.0f, 0.0f);
-        }
+        if (Input.GetKey(KeyCode.W)) gDisplay.transform.Translate(0.0f, adjustDelta, 0.0f);
+        if (Input.GetKey(KeyCode.S)) gDisplay.transform.Translate(0.0f, -adjustDelta, 0.0f);
+        if (Input.GetKey(KeyCode.A)) gDisplay.transform.Translate(-adjustDelta, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.D)) gDisplay.transform.Translate(adjustDelta, 0.0f, 0.0f);
 
         //  adjust hand
-        if (Input.GetKey(KeyCode.T))
+        if (Input.GetKey(KeyCode.T)) gHand.transform.Translate(0.0f, adjustDelta, 0.0f);
+        if (Input.GetKey(KeyCode.G)) gHand.transform.Translate(0.0f, -adjustDelta, 0.0f);
+        if (Input.GetKey(KeyCode.F)) gHand.transform.Translate(-adjustDelta, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.H)) gHand.transform.Translate(adjustDelta, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.R)) gHand.transform.Translate(0.0f, 0.0f, -adjustDelta);
+        if (Input.GetKey(KeyCode.Y)) gHand.transform.Translate(0.0f, 0.0f, adjustDelta);
+    }
+
+    void TaskPointing()
+    {
+        if (gPointingTarget.activeSelf && (gIndexTop.transform.position - gPointingTarget.transform.position).magnitude < 5e-3 && !pointingTargetTouching)
         {
-            GameObject hand = GameObject.Find("hand_right_prefab");
-            hand.transform.Translate(0.0f, adjustDelta, 0.0f);
+            //Debug.Log("touch " + DateTime.Now);
+            pointingTargetTouching = true;
+            System.Random random = new System.Random();
+            float x = (random.Next(100) - 50) / 110.0f;
+            float y = (random.Next(100) - 50) / 110.0f;
+            gPointingTarget.transform.localPosition = new Vector3(x * gScreen.transform.localScale.x, y * gScreen.transform.localScale.y, gPointingTarget.transform.localPosition.z);
         }
-        if (Input.GetKey(KeyCode.G))
+        else
         {
-            GameObject hand = GameObject.Find("hand_right_prefab");
-            hand.transform.Translate(0.0f, -adjustDelta, 0.0f);
-        }
-        if (Input.GetKey(KeyCode.F))
-        {
-            GameObject hand = GameObject.Find("hand_right_prefab");
-            hand.transform.Translate(-adjustDelta, 0.0f, 0.0f);
-        }
-        if (Input.GetKey(KeyCode.H))
-        {
-            GameObject hand = GameObject.Find("hand_right_prefab");
-            hand.transform.Translate(adjustDelta, 0.0f, 0.0f);
-        }
-        if (Input.GetKey(KeyCode.R))
-        {
-            GameObject hand = GameObject.Find("hand_right_prefab");
-            hand.transform.Translate(0.0f, 0.0f, -adjustDelta);
-        }
-        if (Input.GetKey(KeyCode.Y))
-        {
-            GameObject hand = GameObject.Find("hand_right_prefab");
-            hand.transform.Translate(0.0f, 0.0f, adjustDelta);
+            pointingTargetTouching = false;
         }
     }
 
