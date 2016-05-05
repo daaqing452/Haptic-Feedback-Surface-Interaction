@@ -11,34 +11,39 @@ public class All : MonoBehaviour {
     GameObject gIndexTop;
     GameObject gDisplay;
     GameObject gScreen;
-    GameObject gPointingTarget;
+    GameObject gClickTarget;
+    GameObject gDragSource;
+    GameObject gDragTarget;
 
     //  Network
     TcpClient socket = new TcpClient();
     const string serverIP = "192.168.1.159";
     const int serverPort = 7643;
 
-    //  ButtonClick
+    //  Keyboard event
     const float adjustDelta = 0.001f;
 
     //  Task
-    bool pointingTargetTouching = false;
+    const float DIST_Z_THRESHOLD = 0.02f;
+    bool clickTargetTouching = false;
 
     void Start () {
         gHand = GameObject.Find("hand_right_prefab");
         gIndexTop = GameObject.Find("index_top_r");
         gDisplay = GameObject.Find("display");
         gScreen = GameObject.Find("screen");
-        gPointingTarget = GameObject.Find("pointing target");
+        gClickTarget = GameObject.Find("click target");
+        gDragSource = GameObject.Find("drag source");
+        gDragTarget = GameObject.Find("drag target");
     }
     
     void Update()
     {
-        ButtonClick();
-        TaskPointing();
+        KeyboardEvent();
+        TaskClick();
     }
 
-    void ButtonClick()
+    void KeyboardEvent()
     {
         //  Connect to server
         if (Input.GetKeyDown(KeyCode.BackQuote))
@@ -77,21 +82,39 @@ public class All : MonoBehaviour {
         if (Input.GetKey(KeyCode.Y)) gHand.transform.Translate(0.0f, 0.0f, adjustDelta);
     }
 
-    void TaskPointing()
+    void TaskClick()
     {
-        if (gPointingTarget.activeSelf && (gIndexTop.transform.position - gPointingTarget.transform.position).magnitude < 5e-3 && !pointingTargetTouching)
+        if (!gClickTarget.activeSelf) return;
+        if (IsTouch(gClickTarget, gIndexTop))
         {
-            //Debug.Log("touch " + DateTime.Now);
-            pointingTargetTouching = true;
+            Debug.Log("click " + DateTime.Now);
+            clickTargetTouching = true;
             System.Random random = new System.Random();
             float x = (random.Next(100) - 50) / 110.0f;
             float y = (random.Next(100) - 50) / 110.0f;
-            gPointingTarget.transform.localPosition = new Vector3(x * gScreen.transform.localScale.x, y * gScreen.transform.localScale.y, gPointingTarget.transform.localPosition.z);
+            gClickTarget.transform.localPosition = new Vector3(x * gScreen.transform.localScale.x, y * gScreen.transform.localScale.y, gPointingTarget.transform.localPosition.z);
         }
         else
         {
-            pointingTargetTouching = false;
+            clickTargetTouching = false;
         }
+    }
+
+    void TaskDraging()
+    {
+        if (!gDragSource.activeSelf) return;
+        if (IsTouch(gDragSource, gIndexTop))
+        {
+            Debug.Log("drag source " + DateTime.Now);
+        }
+    }
+
+    bool IsTouch(GameObject g0, GameObject g1)
+    {
+        float distX = Math.Abs(g0.transform.position.x - g1.transform.position.x) * 4;
+        float distY = Math.Abs(g0.transform.position.y - g1.transform.position.y) * 4;
+        float distZ = Math.Abs(g0.transform.position.z - g1.transform.position.z) * 4;
+        return (distX < g0.transform.lossyScale.x) && (distY < g0.transform.lossyScale.y) && (distZ < DIST_Z_THRESHOLD);
     }
 
     void ReceiveThread()
