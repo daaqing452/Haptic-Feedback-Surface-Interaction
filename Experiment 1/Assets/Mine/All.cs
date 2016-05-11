@@ -73,18 +73,20 @@ public class All : MonoBehaviour {
         }
 
         //  adjust screen
-        if (Input.GetKey(KeyCode.W)) gDisplay.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.S)) gDisplay.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.A)) gDisplay.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.D)) gDisplay.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.I)) gDisplay.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.K)) gDisplay.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.J)) gDisplay.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.L)) gDisplay.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.U)) gDisplay.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.O)) gDisplay.transform.Translate(0.0f, 0.0f, ADJUST_DELTA);
 
         //  adjust hand
-        if (Input.GetKey(KeyCode.T)) gHand.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.G)) gHand.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.F)) gHand.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.H)) gHand.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.R)) gHand.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
-        if (Input.GetKey(KeyCode.Y)) gHand.transform.Translate(0.0f, 0.0f, ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.W)) gHand.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.S)) gHand.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.A)) gHand.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.D)) gHand.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.Q)) gHand.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.E)) gHand.transform.Translate(0.0f, 0.0f, ADJUST_DELTA);
     }
 
     void TaskClick()
@@ -94,7 +96,6 @@ public class All : MonoBehaviour {
         {
             clickStep = 1;
             Debug.Log("click " + DateTime.Now);
-            System.Random random = new System.Random();
             RandomPosition(gClickTarget);
         }
         else
@@ -117,7 +118,7 @@ public class All : MonoBehaviour {
                     dragTime = DateTime.Now;
                     break;
                 case 1:
-                    if (DateTime.Now - dragTime > TimeSpan.FromSeconds(0.5))
+                    if (DateTime.Now - dragTime > TimeSpan.FromSeconds(0.1))
                     {
                         dragStep = 2;
                         Debug.Log("drag source " + dragTime);
@@ -143,6 +144,11 @@ public class All : MonoBehaviour {
             dragStep = 0;
             gDragSource.GetComponent<Renderer>().material.color = colorIdle;
         }
+    }
+
+    void TaskZoom()
+    {
+
     }
 
     bool IsTouch(GameObject g0, GameObject g1, float b = 2)

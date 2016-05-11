@@ -50,7 +50,6 @@
      <Compile Include="Assets\Mine\All.cs" />
      <Compile Include="Assets\Mine\Ball.cs" />
      <Compile Include="Assets\Mine\Connect.cs" />
-     <Compile Include="Assets\Mine\Screen.cs" />
      <None Include="Assets\HandyHands\shaders\handyskin.shader" />
      <None Include="Assets\HandyHands\readme.txt" />
  <Reference Include="UnityEngine.UI">
