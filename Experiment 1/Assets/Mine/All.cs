@@ -5,11 +5,15 @@ using System.Threading;
 using System.IO;
 using System.Collections.Generic;
 
+using Marker = System.Collections.Generic.KeyValuePair<UnityEngine.Vector3, int>;
+
 public class All : MonoBehaviour {
 
     //  Game objects
+    GameObject gArm;
     GameObject gHand;
     GameObject gIndexTop;
+    GameObject gThumbTop;
     GameObject gDisplay;
     GameObject gScreen;
     GameObject gClickTarget;
@@ -20,14 +24,22 @@ public class All : MonoBehaviour {
 
     //  Network
     TcpClient socket = new TcpClient();
-    const string serverIP = "192.168.1.159";
+    const string serverIP = "192.168.0.109";
     const int serverPort = 7643;
-    
+
     //  Scene
     const float ADJUST_DELTA = 0.002f;
-    const float TOUCH_DIST_Z = 0.005f;
+    const float TOUCH_DIST_Z = 0.01f;
+    Color colorIdle = new Color(1.00f, 0.58f, 0.58f);
+    Color colorWork = new Color(1.00f, 0.16f, 0.16f);
     List<Vector3> poss = new List<Vector3>();
-    string task = "drag";
+    string task = "zoom";
+
+    //  Track
+    Tracking tracking = new Tracking();
+    bool toRegister;
+    int frameID;
+    Frame now = null;
 
     //  Task click
     int clickPos;
@@ -39,16 +51,34 @@ public class All : MonoBehaviour {
     DateTime dragTime;
     Vector3 dragDist;
 
-    //  Tracking
-    const int MAX_MARKER_NUM = 30;
-    int frameID = -1;
-    Frame now;
-    Frame last;
+    // Task zoom
+    const float ZOOM_SOURCE_TARGET_SIZE = 0.01f;
+    int zoomStep = 0;
+    DateTime zoomTime;
+    float zoomDist;
+    float zoomScale;
 
-    void Start () {
+    void Start() {
+        try
+        {
+            socket.Connect(serverIP, serverPort);
+            tracking.socket = socket;
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+        }
+        if (socket.Connected == true)
+        {
+            Thread receiveThread = new Thread(ReceiveThread);
+            receiveThread.Start();
+        }
+
         Application.targetFrameRate = 2;
-        gHand = GameObject.Find("hand_right_prefab");
-        gIndexTop = GameObject.Find("index_top_r");
+        gArm = GameObject.Find("hand_right_prefab");
+        gHand = GameObject.Find("hand_r");
+        gThumbTop = GameObject.Find("sphere (2)");
+        gIndexTop = GameObject.Find("sphere (6)");
         gDisplay = GameObject.Find("display");
         gScreen = GameObject.Find("screen");
 
@@ -75,17 +105,19 @@ public class All : MonoBehaviour {
         {
             case "click":
                 gClickTarget.SetActive(true);
-                clickPos = LocateOnScreen(gClickTarget, -1);
+                clickPos = LocateOnScreen(gClickTarget);
                 break;
             case "drag":
                 gDragSource.SetActive(true);
                 gDragTarget.SetActive(true);
-                int i = LocateOnScreen(gDragSource, -1);
+                int i = LocateOnScreen(gDragSource);
                 dragTargetPos = LocateOnScreen(gDragTarget, i);
                 break;
             case "zoom":
                 gZoomSource.SetActive(true);
                 gZoomTarget.SetActive(true);
+                gZoomSource.transform.localPosition = new Vector3(0.0f, 0.0f, gZoomSource.transform.localPosition.z);
+                gZoomTarget.transform.localPosition = new Vector3(0.0f, 0.0f, gZoomTarget.transform.localPosition.z);
                 break;
         }
     }
@@ -93,35 +125,25 @@ public class All : MonoBehaviour {
     void Update()
     {
         KeyboardEvent();
+        if (now != null && now.used == false)
+        {
+            //Debug.Log(now.n);
+            now.used = true;
+            now = tracking.Track(now, toRegister);
+            for (int i = 0; i < now.n; i++)
+            {
+                GameObject g = GameObject.Find("sphere (" + i + ")");
+                g.transform.position = now.pl[i].Key;
+                if (i == 2 || i == 6) g.GetComponent<Renderer>().material.color = Color.black;
+            }
+        }
         TaskClick();
         TaskDrag();
         TaskZoom();
     }
-
+    
     void KeyboardEvent()
     {
-        //  Connect to server
-        if (Input.GetKeyDown(KeyCode.BackQuote))
-        {
-            if (socket.Available == 0)
-            {
-                Debug.Log("Network connecting ...");
-                try
-                {
-                    socket.Connect(serverIP, serverPort);
-                }
-                catch (Exception e)
-                {
-                    Debug.Log(e);
-                }
-                if (socket.Available != 0)
-                {
-                    Thread receiveThread = new Thread(ReceiveThread);
-                    receiveThread.Start();
-                }
-            }
-        }
-
         //  adjust screen
         if (Input.GetKey(KeyCode.I)) gDisplay.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
         if (Input.GetKey(KeyCode.K)) gDisplay.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
@@ -131,12 +153,16 @@ public class All : MonoBehaviour {
         if (Input.GetKey(KeyCode.O)) gDisplay.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
 
         //  adjust hand
-        if (Input.GetKey(KeyCode.W)) gHand.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.S)) gHand.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.A)) gHand.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.D)) gHand.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.Q)) gHand.transform.Translate(0.0f, 0.0f, ADJUST_DELTA);
-        if (Input.GetKey(KeyCode.E)) gHand.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.W)) gArm.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.S)) gArm.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.A)) gArm.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.D)) gArm.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.Q)) gArm.transform.Translate(0.0f, 0.0f, ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.E)) gArm.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
+
+        //  register
+        toRegister = false;
+        if (Input.GetKey(KeyCode.BackQuote)) toRegister = true;
     }
 
     void TaskClick()
@@ -152,8 +178,6 @@ public class All : MonoBehaviour {
     void TaskDrag()
     {
         if (!gDragSource.activeSelf) return;
-        Color colorIdle = new Color(1.00f, 0.58f, 0.58f);
-        Color colorDraging = new Color(1.00f, 0.16f, 0.16f);
         if (IsTouch(gDragSource, gIndexTop))
         {
             switch (dragStep)
@@ -166,8 +190,8 @@ public class All : MonoBehaviour {
                     if (DateTime.Now - dragTime > TimeSpan.FromSeconds(0.1))
                     {
                         dragStep = 2;
-                        Debug.Log("drag source " + dragTime);
-                        gDragSource.GetComponent<Renderer>().material.color = colorDraging;
+                        Debug.Log("drag " + dragTime);
+                        gDragSource.GetComponent<Renderer>().material.color = colorWork;
                         dragDist = gDragSource.transform.position - gIndexTop.transform.position;
                     }
                     break;
@@ -193,9 +217,47 @@ public class All : MonoBehaviour {
 
     void TaskZoom()
     {
-
+        if (gZoomSource.activeSelf == false) return;
+        if (IsTouch(gZoomSource, gThumbTop) && IsTouch(gZoomSource, gIndexTop))
+        {
+            switch (zoomStep)
+            {
+                case 0:
+                    zoomStep = 1;
+                    zoomTime = DateTime.Now;
+                    break;
+                case 1:
+                    if (DateTime.Now - zoomTime > TimeSpan.FromSeconds(0.2))
+                    {
+                        zoomStep = 2;
+                        Debug.Log("zoom " + dragTime);
+                        gZoomSource.GetComponent<Renderer>().material.color = colorWork;
+                        zoomDist = (gThumbTop.transform.position - gIndexTop.transform.position).magnitude;
+                        zoomScale = gZoomSource.transform.localScale.x;
+                    }
+                    break;
+                case 2:
+                    float d = (gThumbTop.transform.position - gIndexTop.transform.position).magnitude;
+                    float s = d / zoomDist * zoomScale;
+                    gZoomSource.transform.localScale = new Vector3(s, s, gZoomSource.transform.localScale.z);
+                    break;
+            }
+        }
+        else
+        {
+            if (Math.Abs(gZoomSource.transform.lossyScale.x - gZoomTarget.transform.lossyScale.x) < ZOOM_SOURCE_TARGET_SIZE)
+            {
+                System.Random random = new System.Random(DateTime.Now.Millisecond);
+                float s0 = random.Next() % 5 / 100.0f + 0.04f;
+                float s1 = random.Next() % 6 / 100.0f + s0 + 0.03f;
+                gZoomSource.transform.localScale = new Vector3(s0, s0, 0.01f);
+                gZoomTarget.transform.localScale = new Vector3(s1, s1, 0.01f);
+            }
+            zoomStep = 0;
+            gZoomSource.GetComponent<Renderer>().material.color = colorIdle;
+        }
     }
-
+    
     bool IsTouch(GameObject g0, GameObject g1, float b = 2)
     {
         float distX = Math.Abs(g0.transform.position.x - g1.transform.position.x) * b;
@@ -203,8 +265,7 @@ public class All : MonoBehaviour {
         float distZ = Math.Abs(g0.transform.position.z - g1.transform.position.z);
         return (distX < g0.transform.lossyScale.x) && (distY < g0.transform.lossyScale.y) && (distZ < TOUCH_DIST_Z);
     }
-
-    int LocateOnScreen(GameObject g, int banned)
+    int LocateOnScreen(GameObject g, int banned = -1)
     {
         System.Random random = new System.Random(DateTime.Now.Millisecond);
         int i = random.Next() % poss.Count;
@@ -220,41 +281,98 @@ public class All : MonoBehaviour {
     {
         Debug.Log("Network receiving");
         StreamReader streamReader = new StreamReader(socket.GetStream());
+        Frame tmp = null;
         while (true)
         {
             string line = streamReader.ReadLine();
             if (line == null) break;
+            //Debug.Log(line);
             string[] arr = line.Split(' ');
+            switch (arr[0])
+            {
+                case "framestart":
+                    frameID += 1;
+                    //Debug.Log(frameID);
+                    tmp = new Frame();
+                    break;
+                case "frameend":
+                    now = tmp;
+                    break;
+                case "rbposition":
+                    tmp.rb.Add(new Marker(new Vector3(float.Parse(arr[1]), -float.Parse(arr[2]), float.Parse(arr[3])) / 2, frameID));
+                    break;
+                case "rbrotation":
+                    tmp.rbRotation = new Vector4(float.Parse(arr[1]), float.Parse(arr[2]), float.Parse(arr[3]), float.Parse(arr[4]));
+                    break;
+                case "othermarker":
+                    tmp.Add(new Marker(new Vector3(float.Parse(arr[1]), -float.Parse(arr[2]), float.Parse(arr[3])) / 2, frameID));
+                    break;
+            }
         }
         Debug.Log("Network disconnect");
+    }
+}
+
+class Tracking
+{
+    const int MAX_MARKER_NUM = 30;
+    public TcpClient socket;
+    Frame now;
+    Frame last = null;
+    int[] markersPerFinger = new int[] { 3, 4 };
+    int frameID = -1;
+
+    public Frame Track(Frame newFrame, bool toRegister = false)
+    {
+        now = newFrame;
+        if (last == null || toRegister)
+        {
+            Register();
+        }
+        else
+        {
+            Referring();
+        }
+        last = now;
+        return now;
     }
 
     void Register()
     {
+        for (int i = now.n - 1; i >= 0; i--)
+        {
+            if ((now.pl[i].Key - now.rb[0].Key).magnitude > 0.5)
+            {
+                now.pl.RemoveAt(i);
+            }
+        }
+
         // init and get normal vector
         int[] arr = new int[now.n];
         for (int i = 0; i < now.n; i++) arr[i] = i;
-        Vector3 nv = Vector3x.NormalVector(now.rb[1].p, now.rb[2].p, now.rb[3].p);
+        Vector3 nv = Vector3x.NormalVector(now.rb[1].Key, now.rb[2].Key, now.rb[3].Key);
 
         // get angle and dist
         float[] angle = new float[now.n];
         float[] dist = new float[now.n];
         for (int i = 0; i < now.n; i++)
         {
-            Vector3 pv = Vector3x.ProjectiveVector(nv, now.pl[i].p - now.rb[0].p);
-            angle[i] = Vector3.Angle(pv, now.rb[1].p - now.rb[0].p);
-            dist[i] = (now.pl[i].p - now.rb[0].p).magnitude;
+            Vector3 pv = Vector3x.ProjectiveVector(nv, now.pl[i].Key - now.rb[0].Key);
+            angle[i] = Vector3.Angle(pv, now.rb[1].Key - now.rb[0].Key);
+            dist[i] = (now.pl[i].Key - now.rb[0].Key).magnitude;
         }
 
         // sort by finger then sort by dist per finger
         Array.Sort(arr, (int a, int b) => { return angle[a] < angle[b] ? -1 : 1; });
-        for (int finger = 0; finger < 5; finger++)
+        int stride = 0;
+        for (int finger = 0; finger < markersPerFinger.Length; finger++)
         {
-            int jointN = (finger == 4) ? 3 : 4;
-            int[] arr2 = new int[jointN];
-            for (int i = 0; i < jointN; i++) arr2[i] = arr[finger * 4 + i];
+            int markerN = markersPerFinger[finger];
+            int[] arr2 = new int[markerN];
+            for (int i = 0; i < markerN; i++) arr2[i] = arr[stride + i];
             Array.Sort(arr2, (int a, int b) => { return dist[a] < dist[b] ? -1 : 1; });
-            for (int i = 0; i < jointN; i++) arr[finger * 4 + i] = arr2[i];
+            for (int i = 0; i < markerN; i++) arr[stride + i] = arr2[i];
+            stride += markerN;
         }
 
         // renew
@@ -266,7 +384,7 @@ public class All : MonoBehaviour {
         now.pl = pl2;
     }
 
-    void Refering()
+    void Referring()
     {
         // matching
         NetworkFlow networkFlow = new NetworkFlow(last.n, now.n);
@@ -276,7 +394,7 @@ public class All : MonoBehaviour {
             int[] arr = new int[last.n];
             for (int j = 0; j < last.n; j++)
             {
-                weight[i, j] = (now.pl[i].p - last.pl[j].p).magnitude;
+                weight[i, j] = (now.pl[i].Key - last.pl[j].Key).magnitude;
                 arr[j] = j;
             }
             Array.Sort(arr, (int a, int b) => { return weight[i, a] < weight[i, b] ? -1 : 1; });
@@ -287,7 +405,8 @@ public class All : MonoBehaviour {
             }
         }
         int[] match = networkFlow.Solve();
-        Frame fix = new Frame(now.rb);
+        Frame fix = new Frame();
+        fix.rb = now.rb;
         for (int i = 0; i < last.n; i++)
         {
             if (match[i] == -1)
@@ -300,10 +419,8 @@ public class All : MonoBehaviour {
             }
         }
         now = fix;
-        //now.CheckQuality(frameID);
     }
 }
-
 
 class Vector3x
 {
@@ -327,44 +444,28 @@ class Vector3x
     }
 }
 
-class Marker
-{
-    public Vector3 p;
-    public int t;
-
-    public Marker(Vector3 p, int t)
-    {
-        this.p = p;
-        this.t = t;
-    }
-}
-
 class Frame
 {
-    public Marker[] rb;
+    public List<Marker> rb;
+    public Vector4 rbRotation;
     public List<Marker> pl;
-    public int n;
-
-    public Frame(Marker[] rb = null, List<Marker> pl = null)
+    public int n
     {
-        this.rb = (rb == null) ? (new Marker[4]) : rb;
-        this.pl = (pl == null) ? (new List<Marker>()) : pl;
-        n = this.pl.Count;
+        get { return pl.Count; }
     }
+    public bool used;
 
+    public Frame()
+    {
+        rb = new List<Marker>();
+        rbRotation = new Vector4(0, 0, 0, 0);
+        pl = new List<Marker>();
+        used = false;
+    }
+    
     public void Add(Marker p)
     {
         pl.Add(p);
-        n++;
-    }
-
-    public void CheckQuality(int t)
-    {
-        for (int i = 0; i < n; i++)
-        {
-            Marker marker = pl[i];
-            if (t - marker.t > 10) Debug.Log("low quality (" + i + "): " + (t - marker.t));
-        }
     }
 }
 
