@@ -10,8 +10,6 @@ using Marker = System.Collections.Generic.KeyValuePair<UnityEngine.Vector3, int>
 public class All : MonoBehaviour {
 
     //  Game objects
-    GameObject gArm;
-    GameObject gHand;
     GameObject gIndexTop;
     GameObject gThumbTop;
     GameObject gDisplay;
@@ -28,15 +26,17 @@ public class All : MonoBehaviour {
     const int serverPort = 7643;
 
     //  Scene
-    const float ADJUST_DELTA = 0.002f;
-    const float TOUCH_DIST_Z = 0.01f;
+    const float ADJUST_DELTA = 0.001f;
+    const float TOUCH_DIST_Z = 0.02f;
     Color colorIdle = new Color(1.00f, 0.58f, 0.58f);
     Color colorWork = new Color(1.00f, 0.16f, 0.16f);
     List<Vector3> poss = new List<Vector3>();
-    string task = "zoom";
+    string task = "drag";
 
     //  Track
     Tracking tracking = new Tracking();
+    int[] markersPerFinger = new int[] { 3, 4 };
+    Vector3 handBias = new Vector3(0.0f, 0.0f, 0.0f);
     bool toRegister;
     int frameID;
     Frame now = null;
@@ -62,7 +62,6 @@ public class All : MonoBehaviour {
         try
         {
             socket.Connect(serverIP, serverPort);
-            tracking.socket = socket;
         }
         catch (Exception e)
         {
@@ -73,10 +72,9 @@ public class All : MonoBehaviour {
             Thread receiveThread = new Thread(ReceiveThread);
             receiveThread.Start();
         }
-
-        Application.targetFrameRate = 2;
-        gArm = GameObject.Find("hand_right_prefab");
-        gHand = GameObject.Find("hand_r");
+        
+        tracking.markersPerFinger = markersPerFinger;
+        
         gThumbTop = GameObject.Find("sphere (2)");
         gIndexTop = GameObject.Find("sphere (6)");
         gDisplay = GameObject.Find("display");
@@ -127,14 +125,19 @@ public class All : MonoBehaviour {
         KeyboardEvent();
         if (now != null && now.used == false)
         {
-            //Debug.Log(now.n);
+            Debug.Log(now.n);
             now.used = true;
             now = tracking.Track(now, toRegister);
-            for (int i = 0; i < now.n; i++)
+            int fingerTop = markersPerFinger[0];
+            for (int i = 0, j = 0; i < now.n; i++)
             {
                 GameObject g = GameObject.Find("sphere (" + i + ")");
                 g.transform.position = now.pl[i].Key;
-                if (i == 2 || i == 6) g.GetComponent<Renderer>().material.color = Color.black;
+                if (i == fingerTop - 1)
+                {
+                    g.GetComponent<Renderer>().material.color = Color.black;
+                    fingerTop += markersPerFinger[++j];
+                }
             }
         }
         TaskClick();
@@ -145,20 +148,20 @@ public class All : MonoBehaviour {
     void KeyboardEvent()
     {
         //  adjust screen
-        if (Input.GetKey(KeyCode.I)) gDisplay.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.K)) gDisplay.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.J)) gDisplay.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.L)) gDisplay.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.U)) gDisplay.transform.Translate(0.0f, 0.0f, ADJUST_DELTA);
-        if (Input.GetKey(KeyCode.O)) gDisplay.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.W)) gDisplay.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.S)) gDisplay.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.A)) gDisplay.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.D)) gDisplay.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.Q)) gDisplay.transform.Translate(0.0f, 0.0f, ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.E)) gDisplay.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
 
         //  adjust hand
-        if (Input.GetKey(KeyCode.W)) gArm.transform.Translate(0.0f, ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.S)) gArm.transform.Translate(0.0f, -ADJUST_DELTA, 0.0f);
-        if (Input.GetKey(KeyCode.A)) gArm.transform.Translate(-ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.D)) gArm.transform.Translate(ADJUST_DELTA, 0.0f, 0.0f);
-        if (Input.GetKey(KeyCode.Q)) gArm.transform.Translate(0.0f, 0.0f, ADJUST_DELTA);
-        if (Input.GetKey(KeyCode.E)) gArm.transform.Translate(0.0f, 0.0f, -ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.I)) handBias += new Vector3(0.0f, ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.K)) handBias += new Vector3(0.0f, -ADJUST_DELTA, 0.0f);
+        if (Input.GetKey(KeyCode.J)) handBias += new Vector3(-ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.L)) handBias += new Vector3(ADJUST_DELTA, 0.0f, 0.0f);
+        if (Input.GetKey(KeyCode.U)) handBias += new Vector3(0.0f, 0.0f, ADJUST_DELTA);
+        if (Input.GetKey(KeyCode.O)) handBias += new Vector3(0.0f, 0.0f, -ADJUST_DELTA);
 
         //  register
         toRegister = false;
@@ -299,13 +302,13 @@ public class All : MonoBehaviour {
                     now = tmp;
                     break;
                 case "rbposition":
-                    tmp.rb.Add(new Marker(new Vector3(float.Parse(arr[1]), -float.Parse(arr[2]), float.Parse(arr[3])) / 2, frameID));
+                    tmp.rb.Add(new Marker(new Vector3(float.Parse(arr[1]), -float.Parse(arr[2]), float.Parse(arr[3])) / 2 + handBias, frameID));
                     break;
                 case "rbrotation":
                     tmp.rbRotation = new Vector4(float.Parse(arr[1]), float.Parse(arr[2]), float.Parse(arr[3]), float.Parse(arr[4]));
                     break;
                 case "othermarker":
-                    tmp.Add(new Marker(new Vector3(float.Parse(arr[1]), -float.Parse(arr[2]), float.Parse(arr[3])) / 2, frameID));
+                    tmp.Add(new Marker(new Vector3(float.Parse(arr[1]), -float.Parse(arr[2]), float.Parse(arr[3])) / 2 + handBias, frameID));
                     break;
             }
         }
@@ -316,10 +319,10 @@ public class All : MonoBehaviour {
 class Tracking
 {
     const int MAX_MARKER_NUM = 30;
-    public TcpClient socket;
+    const float NOISE_DIST = 0.3f;
+    public int[] markersPerFinger;
     Frame now;
     Frame last = null;
-    int[] markersPerFinger = new int[] { 3, 4 };
     int frameID = -1;
 
     public Frame Track(Frame newFrame, bool toRegister = false)
@@ -336,12 +339,12 @@ class Tracking
         last = now;
         return now;
     }
-
+    
     void Register()
     {
         for (int i = now.n - 1; i >= 0; i--)
         {
-            if ((now.pl[i].Key - now.rb[0].Key).magnitude > 0.5)
+            if ((now.pl[i].Key - now.rb[0].Key).magnitude > NOISE_DIST)
             {
                 now.pl.RemoveAt(i);
             }
