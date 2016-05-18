@@ -10,15 +10,12 @@ using Marker = System.Collections.Generic.KeyValuePair<UnityEngine.Vector3, int>
 public class All : MonoBehaviour {
 
     //  Game objects
-    GameObject gIndexTop;
-    GameObject gThumbTop;
-    GameObject gDisplay;
-    GameObject gScreen;
-    GameObject gClickTarget;
-    GameObject gDragSource;
-    GameObject gDragTarget;
-    GameObject gZoomSource;
-    GameObject gZoomTarget;
+    public GameObject gIndexTop;
+    public GameObject gThumbTop;
+    public GameObject gDisplay;
+    public GameObject gScreen;
+    public GameObject gTaskSource;
+    public GameObject gTaskTarget;
 
     //  Network
     TcpClient socket = new TcpClient();
@@ -27,11 +24,8 @@ public class All : MonoBehaviour {
 
     //  Scene
     const float ADJUST_DELTA = 0.001f;
-    const float TOUCH_DIST_Z = 0.02f;
-    Color colorIdle = new Color(1.00f, 0.58f, 0.58f);
-    Color colorWork = new Color(1.00f, 0.16f, 0.16f);
-    List<Vector3> poss = new List<Vector3>();
-    string task = "drag";
+    Task task;
+    int taskId = -1;
 
     //  Track
     Tracking tracking = new Tracking();
@@ -40,24 +34,7 @@ public class All : MonoBehaviour {
     bool toRegister;
     int frameID;
     Frame now = null;
-
-    //  Task click
-    int clickPos;
-
-    //  Task drag
-    const float DRAG_SOURCE_TARGET_DIST = 0.01f;
-    int dragStep = 0;
-    int dragTargetPos;
-    DateTime dragTime;
-    Vector3 dragDist;
-
-    // Task zoom
-    const float ZOOM_SOURCE_TARGET_SIZE = 0.01f;
-    int zoomStep = 0;
-    DateTime zoomTime;
-    float zoomDist;
-    float zoomScale;
-
+    
     void Start() {
         try
         {
@@ -79,50 +56,18 @@ public class All : MonoBehaviour {
         gIndexTop = GameObject.Find("sphere (6)");
         gDisplay = GameObject.Find("display");
         gScreen = GameObject.Find("screen");
-
-        gClickTarget = GameObject.Find("click target");
-        gDragSource = GameObject.Find("drag source");
-        gDragTarget = GameObject.Find("drag target");
-        gZoomSource = GameObject.Find("zoom source");
-        gZoomTarget = GameObject.Find("zoom target");
-
-        for (int i = -2; i <= 2; i++)
-            for (int j = -1; j <= 1; j++)
-            {
-                float x = i / 6.0f * gScreen.transform.localScale.x;
-                float y = j / 3.0f * gScreen.transform.localScale.y;
-                poss.Add(new Vector3(x, y, 0.0f));
-            }
+        gTaskSource = GameObject.Find("task source");
+        gTaskTarget = GameObject.Find("task target");
         
-        gClickTarget.SetActive(false);
-        gDragSource.SetActive(false);
-        gDragTarget.SetActive(false);
-        gZoomSource.SetActive(false);
-        gZoomTarget.SetActive(false);
-        switch (task)
-        {
-            case "click":
-                gClickTarget.SetActive(true);
-                clickPos = LocateOnScreen(gClickTarget);
-                break;
-            case "drag":
-                gDragSource.SetActive(true);
-                gDragTarget.SetActive(true);
-                int i = LocateOnScreen(gDragSource);
-                dragTargetPos = LocateOnScreen(gDragTarget, i);
-                break;
-            case "zoom":
-                gZoomSource.SetActive(true);
-                gZoomTarget.SetActive(true);
-                gZoomSource.transform.localPosition = new Vector3(0.0f, 0.0f, gZoomSource.transform.localPosition.z);
-                gZoomTarget.transform.localPosition = new Vector3(0.0f, 0.0f, gZoomTarget.transform.localPosition.z);
-                break;
-        }
+        ChangeTask();
     }
     
     void Update()
     {
+        //  keyboard event
         KeyboardEvent();
+
+        //  tracking
         if (now != null && now.used == false)
         {
             Debug.Log(now.n);
@@ -139,12 +84,18 @@ public class All : MonoBehaviour {
                     fingerTop += markersPerFinger[++j];
                 }
             }
+            for (int i = 0; i < 4; i++)
+            {
+                GameObject g = GameObject.Find("sphere (" + (now.n + i) + ")");
+                g.transform.position = now.rb[i].Key;
+                g.GetComponent<Renderer>().material.color = Color.gray;
+            }
         }
-        TaskClick();
-        TaskDrag();
-        TaskZoom();
+
+        //  task
+        task.Work();
     }
-    
+
     void KeyboardEvent()
     {
         //  adjust screen
@@ -166,120 +117,28 @@ public class All : MonoBehaviour {
         //  register
         toRegister = false;
         if (Input.GetKey(KeyCode.BackQuote)) toRegister = true;
+
+        //  change task
+        if (Input.GetKey(KeyCode.T)) ChangeTask();
     }
 
-    void TaskClick()
+    void ChangeTask()
     {
-        if (!gClickTarget.activeSelf) return;
-        if (IsTouch(gClickTarget, gIndexTop, 4))
+        taskId = (taskId + 1) % 3;
+        switch (taskId)
         {
-            Debug.Log("click " + DateTime.Now);
-            clickPos = LocateOnScreen(gClickTarget, clickPos);
-        }
-    }
-
-    void TaskDrag()
-    {
-        if (!gDragSource.activeSelf) return;
-        if (IsTouch(gDragSource, gIndexTop))
-        {
-            switch (dragStep)
-            {
-                case 0:
-                    dragStep = 1;
-                    dragTime = DateTime.Now;
-                    break;
-                case 1:
-                    if (DateTime.Now - dragTime > TimeSpan.FromSeconds(0.1))
-                    {
-                        dragStep = 2;
-                        Debug.Log("drag " + dragTime);
-                        gDragSource.GetComponent<Renderer>().material.color = colorWork;
-                        dragDist = gDragSource.transform.position - gIndexTop.transform.position;
-                    }
-                    break;
-                case 2:
-                    float x = gIndexTop.transform.position.x + dragDist.x;
-                    float y = gIndexTop.transform.position.y + dragDist.y;
-                    float z = gDragSource.transform.position.z;
-                    gDragSource.transform.position = new Vector3(x, y, z);
-                    break;
-            }
-        }
-        else
-        {
-            if ((gDragSource.transform.position - gDragTarget.transform.position).magnitude < DRAG_SOURCE_TARGET_DIST)
-            {
-                int i = LocateOnScreen(gDragSource, dragTargetPos);
-                dragTargetPos = LocateOnScreen(gDragTarget, i);
-            }
-            dragStep = 0;
-            gDragSource.GetComponent<Renderer>().material.color = colorIdle;
-        }
-    }
-
-    void TaskZoom()
-    {
-        if (gZoomSource.activeSelf == false) return;
-        if (IsTouch(gZoomSource, gThumbTop) && IsTouch(gZoomSource, gIndexTop))
-        {
-            switch (zoomStep)
-            {
-                case 0:
-                    zoomStep = 1;
-                    zoomTime = DateTime.Now;
-                    break;
-                case 1:
-                    if (DateTime.Now - zoomTime > TimeSpan.FromSeconds(0.2))
-                    {
-                        zoomStep = 2;
-                        Debug.Log("zoom " + dragTime);
-                        gZoomSource.GetComponent<Renderer>().material.color = colorWork;
-                        zoomDist = (gThumbTop.transform.position - gIndexTop.transform.position).magnitude;
-                        zoomScale = gZoomSource.transform.localScale.x;
-                    }
-                    break;
-                case 2:
-                    float d = (gThumbTop.transform.position - gIndexTop.transform.position).magnitude;
-                    float s = d / zoomDist * zoomScale;
-                    gZoomSource.transform.localScale = new Vector3(s, s, gZoomSource.transform.localScale.z);
-                    break;
-            }
-        }
-        else
-        {
-            if (Math.Abs(gZoomSource.transform.lossyScale.x - gZoomTarget.transform.lossyScale.x) < ZOOM_SOURCE_TARGET_SIZE)
-            {
-                System.Random random = new System.Random(DateTime.Now.Millisecond);
-                float s0 = random.Next() % 5 / 100.0f + 0.04f;
-                float s1 = random.Next() % 6 / 100.0f + s0 + 0.03f;
-                gZoomSource.transform.localScale = new Vector3(s0, s0, 0.01f);
-                gZoomTarget.transform.localScale = new Vector3(s1, s1, 0.01f);
-            }
-            zoomStep = 0;
-            gZoomSource.GetComponent<Renderer>().material.color = colorIdle;
+            case 0:
+                task = new TaskClick(this);
+                break;
+            case 1:
+                task = new TaskDrag(this);
+                break;
+            case 2:
+                task = new TaskZoom(this);
+                break;
         }
     }
     
-    bool IsTouch(GameObject g0, GameObject g1, float b = 2)
-    {
-        float distX = Math.Abs(g0.transform.position.x - g1.transform.position.x) * b;
-        float distY = Math.Abs(g0.transform.position.y - g1.transform.position.y) * b;
-        float distZ = Math.Abs(g0.transform.position.z - g1.transform.position.z);
-        return (distX < g0.transform.lossyScale.x) && (distY < g0.transform.lossyScale.y) && (distZ < TOUCH_DIST_Z);
-    }
-    int LocateOnScreen(GameObject g, int banned = -1)
-    {
-        System.Random random = new System.Random(DateTime.Now.Millisecond);
-        int i = random.Next() % poss.Count;
-        while (i == banned)
-        {
-            i = random.Next() % poss.Count;
-        }
-        g.transform.localPosition = new Vector3(poss[i].x, poss[i].y, g.transform.localPosition.z);
-        return i;
-    }
-
     void ReceiveThread()
     {
         Debug.Log("Network receiving");
@@ -315,6 +174,209 @@ public class All : MonoBehaviour {
         Debug.Log("Network disconnect");
     }
 }
+
+
+class Task
+{
+    const float TOUCH_DIST_Z = 0.02f;
+    public Color colorIdle = new Color(1.00f, 0.58f, 0.58f);
+    public Color colorWork = new Color(1.00f, 0.16f, 0.16f);
+    public All a;
+    public GameObject gIndexTop;
+    public GameObject gThumbTop;
+    public GameObject gScreen;
+    public GameObject gTaskSource;
+    public GameObject gTaskTarget;
+    public List<Vector3> poss = new List<Vector3>();
+
+    public Task(All a)
+    {
+        this.a = a;
+        gIndexTop = a.gIndexTop;
+        gThumbTop = a.gThumbTop;
+        gScreen = a.gScreen;
+        gTaskSource = a.gTaskTarget;
+        gTaskTarget = a.gTaskTarget;
+        for (int i = -2; i <= 2; i++)
+            for (int j = -1; j <= 1; j++)
+            {
+                float x = i / 6.0f * gScreen.transform.localScale.x;
+                float y = j / 3.0f * gScreen.transform.localScale.y;
+                poss.Add(new Vector3(x, y, 0.0f));
+            }
+    }
+
+    public virtual void Work() { }
+
+    public int Random(int x)
+    {
+        return new System.Random(DateTime.Now.Millisecond).Next() % x;
+    }
+
+    public bool IsTouch(GameObject g0, GameObject g1, float b = 2)
+    {
+        float distX = Math.Abs(g0.transform.position.x - g1.transform.position.x) * b;
+        float distY = Math.Abs(g0.transform.position.y - g1.transform.position.y) * b;
+        float distZ = Math.Abs(g0.transform.position.z - g1.transform.position.z);
+        return (distX < g0.transform.lossyScale.x) && (distY < g0.transform.lossyScale.y) && (distZ < TOUCH_DIST_Z);
+    }
+}
+
+class TaskClick : Task
+{
+    int lastPos = -1;
+
+    public TaskClick(All a) : base(a)
+    {
+        gTaskSource.SetActive(false);
+        gTaskTarget.SetActive(true);
+        LocateOnScreen();
+    }
+
+    public override void Work()
+    {
+        if (IsTouch(gTaskTarget, gIndexTop, 4))
+        {
+            Debug.Log("click " + DateTime.Now);
+            LocateOnScreen();
+        }
+    }
+
+    void LocateOnScreen()
+    {
+        int i = Random(poss.Count);
+        while (i == lastPos) i = Random(poss.Count);
+        gTaskTarget.transform.localPosition = new Vector3(poss[i].x, poss[i].y, gTaskTarget.transform.localPosition.z);
+        lastPos = i;
+    }
+}
+
+class TaskDrag : Task
+{
+    const float DRAG_SOURCE_TARGET_DIST = 0.01f;
+    int dragStep = 0;
+    int dragTargetPos;
+    DateTime dragTime;
+    Vector3 dragDist;
+
+    public TaskDrag(All a) : base(a)
+    {
+        gTaskSource.SetActive(true);
+        gTaskTarget.SetActive(true);
+        LocateOnScreen();
+    }
+
+    public override void Work()
+    {
+        if (IsTouch(gTaskSource, gIndexTop))
+        {
+            switch (dragStep)
+            {
+                case 0:
+                    dragStep = 1;
+                    dragTime = DateTime.Now;
+                    break;
+                case 1:
+                    if (DateTime.Now - dragTime > TimeSpan.FromSeconds(0.1))
+                    {
+                        dragStep = 2;
+                        Debug.Log("drag " + dragTime);
+                        gTaskSource.GetComponent<Renderer>().material.color = colorWork;
+                        dragDist = gTaskSource.transform.position - gIndexTop.transform.position;
+                    }
+                    break;
+                case 2:
+                    float x = gIndexTop.transform.position.x + dragDist.x;
+                    float y = gIndexTop.transform.position.y + dragDist.y;
+                    float z = gTaskSource.transform.position.z;
+                    gTaskSource.transform.position = new Vector3(x, y, z);
+                    break;
+            }
+        }
+        else
+        {
+            if ((gTaskSource.transform.position - gTaskTarget.transform.position).magnitude < DRAG_SOURCE_TARGET_DIST)
+            {
+                LocateOnScreen();
+            }
+            dragStep = 0;
+            gTaskSource.GetComponent<Renderer>().material.color = colorIdle;
+        }
+    }
+
+    void LocateOnScreen()
+    {
+        int i = Random(poss.Count);
+        gTaskSource.transform.localPosition = new Vector3(poss[i].x, poss[i].y, gTaskSource.transform.localPosition.z);
+        int j = Random(poss.Count);
+        while (j == i) j = Random(poss.Count);
+        gTaskTarget.transform.localPosition = new Vector3(poss[i].x, poss[i].y, gTaskTarget.transform.localPosition.z);
+    }
+}
+
+class TaskZoom : Task
+{
+    const float ZOOM_SOURCE_TARGET_SIZE_DIST = 0.01f;
+    int zoomStep = 0;
+    DateTime zoomTime;
+    float zoomDist;
+    float zoomScale;
+
+    public TaskZoom(All a) : base(a)
+    {
+        gTaskSource.SetActive(true);
+        gTaskTarget.SetActive(true);
+        LocateOnScreen();
+    }
+
+    public override void Work()
+    {
+        if (gTaskSource.activeSelf == false) return;
+        if (IsTouch(gTaskSource, gThumbTop) && IsTouch(gTaskSource, gIndexTop))
+        {
+            switch (zoomStep)
+            {
+                case 0:
+                    zoomStep = 1;
+                    zoomTime = DateTime.Now;
+                    break;
+                case 1:
+                    if (DateTime.Now - zoomTime > TimeSpan.FromSeconds(0.2))
+                    {
+                        zoomStep = 2;
+                        Debug.Log("zoom " + zoomTime);
+                        gTaskSource.GetComponent<Renderer>().material.color = colorWork;
+                        zoomDist = (gThumbTop.transform.position - gIndexTop.transform.position).magnitude;
+                        zoomScale = gTaskSource.transform.localScale.x;
+                    }
+                    break;
+                case 2:
+                    float d = (gThumbTop.transform.position - gIndexTop.transform.position).magnitude;
+                    float s = d / zoomDist * zoomScale;
+                    gTaskSource.transform.localScale = new Vector3(s, s, gTaskSource.transform.localScale.z);
+                    break;
+            }
+        }
+        else
+        {
+            if (Math.Abs(gTaskSource.transform.lossyScale.x - gTaskTarget.transform.lossyScale.x) < ZOOM_SOURCE_TARGET_SIZE_DIST)
+            {
+                LocateOnScreen();
+            }
+            zoomStep = 0;
+            gTaskSource.GetComponent<Renderer>().material.color = colorIdle;
+        }
+    }
+
+    void LocateOnScreen()
+    {
+        float s0 = Random(5) / 100.0f + 0.04f;
+        float s1 = Random(6) / 100.0f + s0 + 0.03f;
+        gTaskSource.transform.localScale = new Vector3(s0, s0, 0.01f);
+        gTaskTarget.transform.localScale = new Vector3(s1, s1, 0.01f);
+    }
+}
+
 
 class Tracking
 {
