@@ -550,7 +550,7 @@ class Tracking
         // get angle and dist
         float[] angle = new float[now.n];
         float[] dist = new float[now.n];
-        Vector3 pz = Vector3x.ProjectiveVector(nv, new Vector3(-10.0f, 0, -10.0f) - now.rb[0].Key);
+        Vector3 pz = Vector3x.ProjectiveVector(nv, new Vector3(-10.0f, 0, -5.0f) - now.rb[0].Key);
         for (int i = 0; i < now.n; i++)
         {
             Vector3 pv = Vector3x.ProjectiveVector(nv, now.pl[i].Key - now.rb[0].Key);
