@@ -208,6 +208,7 @@ public class All : MonoBehaviour {
     {
         if (recording == false) return;
         if (info == "finish") Debug.Log("Task Count:" + (++recordedTaskCnt));
+		/* local position */
         string s0 = gIndexTop.transform.position.x + "," + gIndexTop.transform.position.y + "," + gIndexTop.transform.position.z;
         string s1 = gThumbTop.transform.position.y + "," + gThumbTop.transform.position.y + "," + gThumbTop.transform.position.z;
         string s2 = gTaskSource.transform.position.x + "," + gTaskSource.transform.position.y + "," + gTaskSource.transform.position.z + "," + gTaskSource.transform.lossyScale.x;
